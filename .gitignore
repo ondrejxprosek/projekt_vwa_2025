@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtuální prostředí
+venv/
+
+# Databáze
+*.db
+
+# VSCode nastavení (volitelné)
+.vscode/
+
+# OS systémové soubory
+.DS_Store
