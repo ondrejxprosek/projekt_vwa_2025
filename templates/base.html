@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title or 'Moje Aplikace' }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/modern.css') }}">
+</head>
+<body>
+<header class="navbar container">
+<div class="brand">
+<span class="badge">ITB</span>
+<span style="margin-left:10px">Vision</span>
+</div>
+<div class="nav-actions">
+{% if session.get('user_id') %}
+{% set me = User.query.get(session.get('user_id')) %}
+<div class="kv">{{ me.username }} • <span class="small-muted">{{ me.role }}</span></div>
+{% if me.role == 'admin' %}<a class="btn" href="{{ url_for('admin_panel') }}">Uživatelé</a>{% endif %}
+{% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('admin_items') }}">Položky</a>{% endif %}
+<a class="btn" href="{{ url_for('logout') }}">Odhlásit</a>
+{% else %}
+<a class="btn" href="{{ url_for('login') }}">Přihlásit</a>
+<a class="btn" href="{{ url_for('register') }}">Registrovat</a>
+{% endif %}
+</div>
+</header>
+
+
+<main class="container">
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, msg in messages %}
+<div class="flash flash-{{ 'success' if category=='success' else ('danger' if category=='danger' else 'info') }} card">
+{{ msg }}
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
+
+{% block content %}{% endblock %}
+
+
+<div class="footer">© {{ 2025 }} • ITB Vision — minimalní & moderní</div>
+</main>
+
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="center-viewport">
+<div class="card" style="width:520px">
+<h3 class="h1">Vytvořit účet</h3>
+<p class="hint">Vyplň uživatelské jméno, heslo a roli</p>
+<form method="POST" class="mt-3">
+<div class="form-row">
+<input class="input" name="username" placeholder="Uživatelské jméno" required>
+<input class="input" name="password" type="password" placeholder="Heslo" required>
+</div>
+<div style="height:10px"></div>
+<label class="small-muted">Role</label>
+<select name="role" class="input">
+<option value="user">user</option>
+<option value="manager">manager</option>
+<option value="admin">admin</option>
+</select>
+<div style="height:12px"></div>
+<div class="form-row">
+<button class="btn glow" type="submit" style="flex:1">Registrovat</button>
+</div>
+</form>
+</div>
+</div>
+{% endblock %}

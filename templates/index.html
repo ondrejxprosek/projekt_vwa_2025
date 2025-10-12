@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div>
+<h3 style="margin:0">Vítej, {{ user.username }}</h3>
+<div class="small-muted">Role: {{ user.role }}</div>
+</div>
+<div>
+<span class="badge">Položek: {{ items|length }}</span>
+</div>
+</div>
+
+
+{% if user.role in ['admin','manager'] %}
+<form method="POST" action="{{ url_for('add_item') }}" style="margin-top:16px" class="form-inline">
+<input class="input" name="name" placeholder="Název nové položky" required>
+<input class="input" name="description" placeholder="Popis (volitelně)">
+<button class="btn glow" type="submit">Přidat</button>
+</form>
+{% endif %}
+
+
+<div class="list">
+{% for it in items %}
+<div class="list-item">
+<div>
+<div style="font-weight:600">{{ it.name }}</div>
+<div class="small-muted">{{ it.description or 'Bez popisu' }}</div>
+</div>
+<div class="kv">ID {{ it.id }}</div>
+</div>
+{% else %}
+<div class="small-muted">Žádné položky.</div>
+{% endfor %}
+</div>
+</div>
+{% endblock %}
