@@ -213,6 +213,28 @@ def register():
 
     return render_template('register.html')
 
+@app.route('/admin/add_user', methods=['POST'])
+@login_required
+@role_required('admin')
+def admin_add_user():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    role = request.form.get('role', 'user')
+
+    if not username or not password:
+        flash('Uživatelské jméno a heslo jsou povinné.', 'warning')
+        return redirect(url_for('admin_panel'))
+
+    if User.query.filter_by(username=username).first():
+        flash('Uživatel již existuje.', 'warning')
+        return redirect(url_for('admin_panel'))
+
+    new_user = User(username=username, role=role)
+    new_user.set_password(password)
+    db.session.add(new_user)
+    db.session.commit()
+    flash(f'Uživatel {username} byl vytvořen.', 'success')
+    return redirect(url_for('admin_panel'))
 
 @app.route('/logout')
 def logout():

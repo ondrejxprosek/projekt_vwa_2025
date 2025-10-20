@@ -1,40 +1,55 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="card">
-<h3 class="h1">Administrace uživatelů</h3>
-<table class="table">
-<thead>
-<tr><th>ID</th><th>Uživatel</th><th>Role</th><th>Akce</th></tr>
-</thead>
-<tbody>
-{% for u in users %}
-<tr>
-<td>{{ u.id }}</td>
-<td>{{ u.username }}</td>
-<td>
-{% if u.id != user.id %}
-<form method="POST" action="{{ url_for('update_role', user_id=u.id) }}" class="form-inline">
-<select name="role" class="input">
-<option value="user" {% if u.role=='user' %}selected{% endif %}>user</option>
-<option value="manager" {% if u.role=='manager' %}selected{% endif %}>manager</option>
-<option value="admin" {% if u.role=='admin' %}selected{% endif %}>admin</option>
-</select>
-<button class="btn" type="submit">Uložit</button>
-</form>
-{% else %}
-<span class="small-muted">{{ u.role }} (ty)</span>
-{% endif %}
-</td>
-<td>
-{% if u.id != user.id %}
-<form method="POST" action="{{ url_for('delete_user', user_id=u.id) }}">
-<button class="btn" type="submit" onclick="return confirm('Smazat uživatele {{u.username}}?')">Smazat</button>
-</form>
-{% else %}<span class="small-muted">Nelze smazat</span>{% endif %}
-</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+  <h3 class="h1">Administrace uživatelů</h3>
+
+  <!-- 🟢 Formulář pro přidání nového uživatele -->
+  <form method="POST" action="{{ url_for('admin_add_user') }}" class="form-inline" style="margin:16px 0">
+    <input class="input" name="username" placeholder="Uživatelské jméno" required>
+    <input class="input" name="password" type="password" placeholder="Heslo" required>
+    <select name="role" class="input">
+      <option value="user">user</option>
+      <option value="manager">manager</option>
+      <option value="admin">admin</option>
+    </select>
+    <button class="btn glow" type="submit">Přidat</button>
+  </form>
+
+  <table class="table">
+    <thead>
+      <tr><th>ID</th><th>Uživatel</th><th>Role</th><th>Akce</th></tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.id }}</td>
+        <td>{{ u.username }}</td>
+        <td>
+          {% if u.id != user.id %}
+          <form method="POST" action="{{ url_for('update_role', user_id=u.id) }}" class="form-inline">
+            <select name="role" class="input">
+              <option value="user" {% if u.role=='user' %}selected{% endif %}>user</option>
+              <option value="manager" {% if u.role=='manager' %}selected{% endif %}>manager</option>
+              <option value="admin" {% if u.role=='admin' %}selected{% endif %}>admin</option>
+            </select>
+            <button class="btn" type="submit">Uložit</button>
+          </form>
+          {% else %}
+          <span class="small-muted">{{ u.role }} (ty)</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if u.id != user.id %}
+          <form method="POST" action="{{ url_for('delete_user', user_id=u.id) }}">
+            <button class="btn" type="submit" onclick="return confirm('Smazat uživatele {{u.username}}?')">Smazat</button>
+          </form>
+          {% else %}
+          <span class="small-muted">Nelze smazat</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}
