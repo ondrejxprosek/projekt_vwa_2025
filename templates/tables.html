@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card">
+  <h3 class="h1">Správa stolů</h3>
+
+  <!-- Přidat nový stůl -->
+  <form method="POST" action="{{ url_for('add_table') }}" style="max-width:540px;margin-top:10px;">
+    <input class="input" name="name" placeholder="Název stolu" required>
+    <div style="height:10px"></div>
+    <input class="input" name="description" placeholder="Popis (volitelné)">
+    <div style="height:14px"></div>
+    <button class="btn glow" type="submit" style="width:100%;padding:10px">Přidat stůl</button>
+  </form>
+
+  <!-- Seznam stolů s inline editací -->
+  <table class="table" style="width:100%;margin-top:20px">
+    <thead>
+      <tr><th style="width:60px">ID</th><th>Název</th><th>Popis</th><th style="width:220px">Akce</th></tr>
+    </thead>
+    <tbody>
+      {% for table in tables %}
+      <tr>
+        <td>{{ table.id }}</td>
+        <td>
+          <form method="POST" action="{{ url_for('edit_table', table_id=table.id) }}" class="form-inline">
+            <input class="input" name="name" value="{{ table.name }}">
+        </td>
+        <td><input class="input" name="description" value="{{ table.description or '' }}"></td>
+        <td>
+            <button class="btn" type="submit">Uložit</button>
+          </form>
+          <form method="POST" action="{{ url_for('delete_table', table_id=table.id) }}" style="display:inline-block;margin-left:8px">
+            <button class="btn" type="submit" onclick="return confirm('Smazat stůl {{ table.name }}?')">Smazat</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="small-muted">Žádné stoly</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'super_tajne_heslo'  # změň si!
@@ -34,7 +35,32 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255), nullable=True)
+    price = db.Column(db.Float, nullable=False)  # přidej tohle
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Table(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class TableSession(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
+    opened_at = db.Column(db.DateTime, default=datetime.utcnow)
+    closed_at = db.Column(db.DateTime, nullable=True)
+
+    table = db.relationship('Table', backref=db.backref('sessions', lazy='dynamic'))
+
+class TableItemEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.Integer, db.ForeignKey('table_session.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    quantity = db.Column(db.Integer, default=1)
+
+    session = db.relationship('TableSession', backref=db.backref('entries', lazy='dynamic'))
+    item = db.relationship('Item')
 
 # --- DEKORÁTORY ---
 def login_required(f):
@@ -134,16 +160,24 @@ def admin_items():
 @app.route('/admin/items/add', methods=['POST'])
 @login_required
 @role_required('admin', 'manager')
-def add_item():
+def admin_items_add():
     name = request.form.get('name')
     description = request.form.get('description')
-    if not name.strip():
-        flash('Název položky nesmí být prázdný.', 'warning')
+    price = request.form.get('price')
+    
+    if not name or not price:
+        flash('Název a cena jsou povinné', 'danger')
         return redirect(url_for('admin_items'))
-    new_item = Item(name=name, description=description)
-    db.session.add(new_item)
-    db.session.commit()
-    flash('Položka byla přidána.', 'success')
+    
+    try:
+        new_item = Item(name=name, description=description, price=float(price))
+        db.session.add(new_item)
+        db.session.commit()
+        flash(f'Položka "{name}" přidána', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Chyba: {str(e)}', 'danger')
+    
     return redirect(url_for('admin_items'))
 
 
@@ -153,12 +187,14 @@ def add_item():
 def edit_item(item_id):
     item = Item.query.get(item_id)
     if not item:
-        flash('Položka nenalezena.', 'danger')
+        flash('Položka nenalezena', 'danger')
         return redirect(url_for('admin_items'))
+    
     item.name = request.form.get('name')
     item.description = request.form.get('description')
+    item.price = float(request.form.get('price', item.price))
     db.session.commit()
-    flash('Položka byla upravena.', 'success')
+    flash('Položka aktualizována', 'success')
     return redirect(url_for('admin_items'))
 
 
@@ -167,13 +203,62 @@ def edit_item(item_id):
 @role_required('admin', 'manager')
 def delete_item(item_id):
     item = Item.query.get(item_id)
-    if not item:
-        flash('Položka nenalezena.', 'danger')
-        return redirect(url_for('admin_items'))
-    db.session.delete(item)
-    db.session.commit()
-    flash('Položka byla smazána.', 'info')
+    if item:
+        db.session.delete(item)
+        db.session.commit()
+        flash('Položka smazána', 'success')
     return redirect(url_for('admin_items'))
+
+
+# ROUTES pro správu stolů
+@app.route('/tables')
+@login_required
+@role_required('admin', 'manager')
+def tables():
+    tables = Table.query.order_by(Table.id).all()
+    return render_template('tables.html', tables=tables, title='Stoly')
+
+@app.route('/tables/add', methods=['POST'])
+@login_required
+@role_required('admin', 'manager')
+def add_table():
+    name = request.form.get('name')
+    description = request.form.get('description')
+    if not name:
+        flash('Název stolu je povinný', 'danger')
+        return redirect(url_for('tables'))
+    t = Table(name=name, description=description)
+    db.session.add(t)
+    db.session.commit()
+    flash('Stůl přidán', 'success')
+    return redirect(url_for('tables'))
+
+@app.route('/tables/edit/<int:table_id>', methods=['POST'])
+@login_required
+@role_required('admin', 'manager')
+def edit_table(table_id):
+    t = Table.query.get(table_id)
+    if not t:
+        flash('Stůl nenalezen', 'danger')
+        return redirect(url_for('tables'))
+    t.name = request.form.get('name') or t.name
+    t.description = request.form.get('description') or t.description
+    db.session.commit()
+    flash('Stůl upraven', 'success')
+    return redirect(url_for('tables'))
+
+@app.route('/tables/delete/<int:table_id>', methods=['POST'])
+@login_required
+@role_required('admin', 'manager')
+def delete_table(table_id):
+    t = Table.query.get(table_id)
+    if t:
+        db.session.delete(t)
+        db.session.commit()
+        flash('Stůl smazán', 'success')
+    else:
+        flash('Stůl nenalezen', 'danger')
+    return redirect(url_for('tables'))
 
 
 # --- AUTH ---
@@ -241,6 +326,67 @@ def logout():
     session.pop('user_id', None)
     flash('Byl jsi odhlášen.', 'info')
     return redirect(url_for('login'))
+
+# přehled stolů (default po kliknutí na Pokladna)
+@app.route('/cashier')
+@login_required
+def cashier():
+    tables_list = Table.query.order_by(Table.id).all()
+    return render_template('cashier.html', tables=tables_list, session_obj=None, items=None, title='Pokladna')
+
+# otevřít (nebo znovu použít) session pro stůl
+@app.route('/cashier/open/<int:table_id>')
+@login_required
+def cashier_open(table_id):
+    # zkontroluj existující otevřenou session
+    sess = TableSession.query.filter_by(table_id=table_id, closed_at=None).first()
+    if not sess:
+        sess = TableSession(table_id=table_id)
+        db.session.add(sess)
+        db.session.commit()
+    return redirect(url_for('cashier_session', session_id=sess.id))
+
+# zobrazení session s položkami
+@app.route('/cashier/session/<int:session_id>')
+@login_required
+def cashier_session(session_id):
+    sess = TableSession.query.get(session_id)
+    if not sess:
+        flash('Session nenalezena.', 'danger')
+        return redirect(url_for('cashier'))
+    items = Item.query.all()
+    # načti existující položky pro session (seřazeny dle času)
+    entries = sess.entries.order_by(TableItemEntry.timestamp).all()
+    return render_template('cashier.html', tables=None, session_obj=sess, items=items, entries=entries, title=f'Pokladna - {sess.table.name}')
+
+# přidat položku do otevřené session
+@app.route('/cashier/session/<int:session_id>/add_item', methods=['POST'])
+@login_required
+def cashier_add_item(session_id):
+    sess = TableSession.query.get(session_id)
+    if not sess:
+        flash('Session nenalezena.', 'danger')
+        return redirect(url_for('cashier'))
+    item_id = request.form.get('item_id')
+    if not item_id:
+        flash('Chyba: položka nebyla zvolena.', 'danger')
+        return redirect(url_for('cashier_session', session_id=session_id))
+    entry = TableItemEntry(session_id=sess.id, item_id=int(item_id), quantity=int(request.form.get('quantity', 1)))
+    db.session.add(entry)
+    db.session.commit()
+    flash('Položka přidána ke stolu.', 'success')
+    return redirect(url_for('cashier_session', session_id=session_id))
+
+# zavřít session (volitelně)
+@app.route('/cashier/session/<int:session_id>/close', methods=['POST'])
+@login_required
+def cashier_close_session(session_id):
+    sess = TableSession.query.get(session_id)
+    if sess and sess.closed_at is None:
+        sess.closed_at = datetime.utcnow()
+        db.session.commit()
+        flash('Session uzavřena.', 'info')
+    return redirect(url_for('cashier'))
 
 
 if __name__ == '__main__':

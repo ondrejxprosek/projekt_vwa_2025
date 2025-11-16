@@ -14,7 +14,7 @@
     <a class="home-link" href="{{ url_for('index') }}" title="Domů">
       <img src="{{ url_for('static', filename='img/home.png') }}" alt="Domů" width="22" height="22" aria-hidden="true">
     </a>
-    <a class="home-link" href="{{ url_for('index') }}" title="Pokladna">
+    <a class="home-link" href="{{ url_for('cashier') }}" title="Pokladna">
       <img src="{{ url_for('static', filename='img/cashier.png') }}" alt="Pokladna" width="22" height="22" aria-hidden="true">
     </a>
 <div class="brand">
@@ -25,6 +25,7 @@
 {% set me = User.query.get(session.get('user_id')) %}
 <div class="kv">{{ me.username }} • <span class="small-muted">{{ me.role }}</span></div>
 {% if me.role == 'admin' %}<a class="btn" href="{{ url_for('admin_panel') }}">Uživatelé</a>{% endif %}
+{% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('tables') }}">Stoly</a>{% endif %}
 {% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('admin_items') }}">Položky</a>{% endif %}
 <a class="btn" href="{{ url_for('logout') }}">Odhlásit</a>
 {% else %}

@@ -2,11 +2,20 @@
 {% block content %}
 <div class="card">
   <h3 class="h1">Správa položek</h3>
-  <form method="POST" action="{{ url_for('add_item') }}" class="form-inline" style="margin-bottom:12px">
-    <input class="input" name="name" placeholder="Název" required>
-    <input class="input" name="description" placeholder="Popis">
-    <button class="btn glow" type="submit">Přidat</button>
-  </form>
+  <form method="POST" action="{{ url_for('admin_items_add') }}">
+  <h3 class="h1">Přidat položku</h3>
+  
+  <input class="input" name="name" placeholder="Název" required>
+  <div style="height:10px"></div>
+  
+  <textarea class="input" name="description" placeholder="Popis" style="resize:none;min-height:60px;"></textarea>
+  <div style="height:10px"></div>
+  
+  <input class="input" name="price" type="number" placeholder="Cena (Kč)" step="0.01" required>
+  <div style="height:14px"></div>
+  
+  <button class="btn glow" type="submit" style="width:100%;padding:10px;">Přidat</button>
+</form>
 
   <table class="table">
     <thead>

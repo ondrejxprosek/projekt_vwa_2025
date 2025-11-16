@@ -13,7 +13,7 @@
 
 
 {% if user.role in ['admin','manager'] %}
-<form method="POST" action="{{ url_for('add_item') }}" style="margin-top:16px" class="form-inline">
+<form method="POST" action="{{ url_for('admin_items_add') }}" style="margin-top:16px" class="form-inline">
 <input class="input" name="name" placeholder="Název nové položky" required>
 <input class="input" name="description" placeholder="Popis (volitelně)">
 <button class="btn glow" type="submit">Přidat</button>
