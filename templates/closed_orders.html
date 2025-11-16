@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div>
+  <h1 class="h1">Uzavřené účty</h1>
+  <p class="small-muted">Přehled všech zaplacených účtů</p>
+</div>
+
+<div class="card" style="margin-top:16px;overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:2px solid rgba(124,92,255,0.2);">
+        <th style="text-align:left;padding:12px;font-weight:700;">Účet #</th>
+        <th style="text-align:left;padding:12px;font-weight:700;">Stůl</th>
+        <th style="text-align:left;padding:12px;font-weight:700;">Otevřeno</th>
+        <th style="text-align:left;padding:12px;font-weight:700;">Uzavřeno</th>
+        <th style="text-align:right;padding:12px;font-weight:700;">Položky</th>
+        <th style="text-align:right;padding:12px;font-weight:700;">Celkem</th>
+        <th style="text-align:center;padding:12px;font-weight:700;">Akce</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if orders %}
+        {% for order in orders %}
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.02);">
+          <td style="padding:12px;font-weight:700;">{{ order.id }}</td>
+          <td style="padding:12px;">{{ order.table.name }}</td>
+          <td style="padding:12px;font-size:13px;">{{ order.opened_at.strftime('%d.%m.%Y %H:%M:%S') }}</td>
+          <td style="padding:12px;font-size:13px;">{{ order.closed_at.strftime('%d.%m.%Y %H:%M:%S') }}</td>
+          <td style="padding:12px;text-align:right;">{{ order.items.count() }}</td>
+          <td style="padding:12px;text-align:right;font-weight:700;color:var(--accent);">
+            {% set ns = namespace(total=0) %}
+            {% for item in order.items %}
+              {% set ns.total = ns.total + (item.price * item.quantity) %}
+            {% endfor %}
+            {{ "%.2f"|format(ns.total) }} Kč
+          </td>
+          <td style="padding:12px;text-align:center;">
+            <a class="btn" href="{{ url_for('view_order', order_id=order.id) }}" style="padding:6px 12px;font-size:12px;">Detail</a>
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" style="padding:20px;text-align:center;color:var(--muted);">Žádné uzavřené účty</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

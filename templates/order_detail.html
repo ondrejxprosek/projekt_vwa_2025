@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width:600px;margin:0 auto;">
+  <a class="btn" href="{{ url_for('closed_orders') }}" style="margin-bottom:16px;">← Zpět</a>
+  
+  <div class="card">
+    <h2 class="h1">Účet #{{ order.id }}</h2>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;padding:12px;background:rgba(124,92,255,0.05);border-radius:8px;">
+      <div>
+        <div class="small-muted">Stůl</div>
+        <div style="font-weight:700;font-size:16px;">{{ order.table.name }}</div>
+      </div>
+      <div>
+        <div class="small-muted">Otevřeno</div>
+        <div style="font-weight:700;font-size:14px;">{{ order.opened_at.strftime('%d.%m.%Y %H:%M:%S') }}</div>
+      </div>
+      <div>
+        <div class="small-muted">Uzavřeno</div>
+        <div style="font-weight:700;font-size:14px;">{{ order.closed_at.strftime('%d.%m.%Y %H:%M:%S') }}</div>
+      </div>
+      <div>
+        <div class="small-muted">Trvání</div>
+        <div style="font-weight:700;font-size:14px;">
+          {% set duration = (order.closed_at - order.opened_at).total_seconds() / 60 | int %}
+          {{ duration }} minut
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:20px;margin-bottom:10px;">Položky</h3>
+    {% if items %}
+      {% set ns = namespace(total=0) %}
+      {% for item in items %}
+      <div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid rgba(255,255,255,0.02);">
+        <div>
+          <div style="font-weight:600;">{{ item.item.name }}{% if item.quantity > 1 %} ×{{ item.quantity }}{% endif %}</div>
+          <div class="small-muted" style="font-size:12px;">{{ item.timestamp.strftime('%H:%M:%S') }}</div>
+        </div>
+        <div style="font-weight:700;">{{ "%.2f"|format(item.price * item.quantity) }} Kč</div>
+      </div>
+      {% set ns.total = ns.total + (item.price * item.quantity) %}
+      {% endfor %}
+      
+      <div style="display:flex;justify-content:space-between;padding:14px;background:linear-gradient(90deg, rgba(124,92,255,0.1), rgba(0,230,168,0.1));border-radius:8px;margin-top:12px;font-weight:700;font-size:16px;">
+        <div>Celkem</div>
+        <div style="color:var(--accent);">{{ "%.2f"|format(ns.total) }} Kč</div>
+      </div>
+    {% else %}
+      <p class="hint">Žádné položky.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

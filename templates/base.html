@@ -27,6 +27,7 @@
 {% if me.role == 'admin' %}<a class="btn" href="{{ url_for('admin_panel') }}">Uživatelé</a>{% endif %}
 {% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('tables') }}">Stoly</a>{% endif %}
 {% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('admin_items') }}">Položky</a>{% endif %}
+{% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('closed_orders') }}">Uzavřené účty</a>{% endif %}
 <a class="btn" href="{{ url_for('logout') }}">Odhlásit</a>
 {% else %}
 <a class="btn" href="{{ url_for('login') }}">Přihlásit</a>

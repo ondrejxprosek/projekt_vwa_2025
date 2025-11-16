@@ -5,35 +5,56 @@
   <h2 class="h1">Stoly</h2>
   <div class="items-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px;">
     {% for table in tables %}
-    <a class="card item-card" href="{{ url_for('cashier_open', table_id=table.id) }}" style="text-decoration:none;color:inherit;">
-      <div style="font-weight:700;font-size:18px">{{ table.name }}</div>
-      <div class="small-muted" style="margin-top:8px">{{ table.description or 'Bez popisu' }}</div>
-    </a>
+    {% set open_order = table.orders.filter_by(closed_at=None).order_by(db.desc('opened_at')).first() %}
+    <div class="card item-card" style="padding:14px;{% if open_order %}background:linear-gradient(135deg, rgba(124,92,255,0.15), rgba(0,230,168,0.1));border:2px solid rgba(124,92,255,0.3);{% endif %}">
+      <div>
+        <div style="font-weight:700;font-size:18px">{{ table.name }}</div>
+        <div class="small-muted" style="margin-top:8px">{{ table.description or 'Bez popisu' }}</div>
+        {% if open_order %}
+        <div style="margin-top:12px;font-size:16px;font-weight:700;color:var(--accent);">
+          {% set ns = namespace(total=0) %}
+          {% for oi in open_order.items %}
+            {% set ns.total = ns.total + (oi.price * oi.quantity) %}
+          {% endfor %}
+          {{ "%.2f"|format(ns.total) }} Kč
+        </div>
+        <div class="small-muted" style="font-size:12px;margin-top:4px;">Účet #{{ open_order.id }}</div>
+        {% endif %}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <a class="btn" href="{{ url_for('cashier_open', table_id=table.id) }}" style="flex:1;text-align:center;">{% if open_order %}Pokračovat{% else %}Otevři stůl{% endif %}</a>
+      </div>
+    </div>
     {% else %}
     <p class="hint">Žádné stoly.</p>
     {% endfor %}
   </div>
+
 {% else %}
-  <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;">
+  <!-- Otevřený účet / stůl -->
+  <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div>
-      <h2 class="h1">Stůl: {{ session_obj.table.name }}</h2>
-      <div class="small-muted">{{ session_obj.table.description or '' }}</div>
-      <div style="margin-top:8px;font-size:13px;color:var(--muted)">Otevřeno: {{ session_obj.opened_at }}</div>
+      <h2 class="h1">Stůl: {{ order.table.name }}</h2>
+      <div class="small-muted">{{ order.table.description or '' }}</div>
+      <div style="margin-top:8px;font-size:13px;color:var(--muted)">Otevřeno: {{ order.opened_at.strftime('%H:%M:%S') }}</div>
+      <div style="margin-top:4px;font-size:13px;color:var(--muted)">Účet #{{ order.id }}</div>
     </div>
-    <form method="POST" action="{{ url_for('cashier_close_session', session_id=session_obj.id) }}">
-      <button class="btn" type="submit">Zavřít stůl</button>
-    </form>
+    <div style="display:flex;gap:8px;">
+      <a class="btn" href="{{ url_for('cashier_leave', order_id=order.id) }}">Opustit stůl</a>
+      <a class="btn" href="{{ url_for('cashier_close_preview', order_id=order.id) }}">Uzavřít stůl</a>
+    </div>
   </div>
 
-  <h3 style="margin-top:18px">Položky</h3>
+  <h3 style="margin-top:18px">Položky k přidání</h3>
   <div class="items-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px;">
     {% for item in items %}
     <div class="card" style="padding:18px;text-align:center;">
       <div style="font-weight:700">{{ item.name }}</div>
       <div class="small-muted" style="margin:6px 0">{{ item.description or '' }}</div>
       <div style="color:var(--accent);font-weight:700;margin-bottom:8px">{{ "%.2f"|format(item.price) }} Kč</div>
-      <form method="POST" action="{{ url_for('cashier_add_item', session_id=session_obj.id) }}">
+      <form method="POST" action="{{ url_for('cashier_add_item', order_id=order.id) }}">
         <input type="hidden" name="item_id" value="{{ item.id }}">
+        <input type="hidden" name="quantity" value="1">
         <button class="btn glow" type="submit" style="width:100%">Přidat</button>
       </form>
     </div>
@@ -42,20 +63,29 @@
 
   <h3 style="margin-top:20px">Objednávka</h3>
   <div style="margin-top:10px">
-    {% if entries %}
-      {% for e in entries %}
+    {% if order_items %}
+      {% set ns = namespace(total=0) %}
+      {% for oi in order_items %}
       <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;margin-bottom:8px;">
         <div>
-          <div style="font-weight:700">{{ e.item.name }}</div>
-          <div class="small-muted" style="font-size:13px">{{ e.timestamp }}</div>
+          <div style="font-weight:700">{{ oi.item.name }}{% if oi.quantity and oi.quantity > 1 %} ×{{ oi.quantity }}{% endif %}</div>
+          <div class="small-muted" style="font-size:13px">{{ oi.timestamp.strftime('%H:%M:%S') }}</div>
         </div>
-        <div style="font-weight:700">{{ "%.2f"|format(e.item.price) }} Kč</div>
+        <div style="font-weight:700">{{ "%.2f"|format(oi.price * oi.quantity) }} Kč</div>
       </div>
+      {% set ns.total = ns.total + (oi.price * oi.quantity) %}
       {% endfor %}
+      
+      <!-- Součet -->
+      <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin-top:12px;border-top:2px solid rgba(124,92,255,0.2);font-weight:700;font-size:16px;">
+        <div>Celkem</div>
+        <div style="color:var(--accent);">{{ "%.2f"|format(ns.total) }} Kč</div>
+      </div>
     {% else %}
       <p class="hint">Zatím žádné položky.</p>
     {% endif %}
   </div>
+
 {% endif %}
 
 {% endblock %}

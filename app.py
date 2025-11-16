@@ -62,6 +62,27 @@ class TableItemEntry(db.Model):
     session = db.relationship('TableSession', backref=db.backref('entries', lazy='dynamic'))
     item = db.relationship('Item')
 
+# --- nový model pro účet (order) a položky účtu ---
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
+    opened_at = db.Column(db.DateTime, default=datetime.utcnow)
+    closed_at = db.Column(db.DateTime, nullable=True)
+    note = db.Column(db.String(255), nullable=True)
+
+    table = db.relationship('Table', backref=db.backref('orders', lazy='dynamic'))
+
+class OrderItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    quantity = db.Column(db.Integer, default=1)
+    price = db.Column(db.Float, nullable=False)  # cena v čase přidání
+
+    order = db.relationship('Order', backref=db.backref('items', lazy='dynamic'))
+    item = db.relationship('Item')
+
 # --- DEKORÁTORY ---
 def login_required(f):
     @wraps(f)
@@ -98,6 +119,11 @@ def index():
 def inject_user_model():
     return dict(User=User)
 
+@app.context_processor
+def inject_db():
+    return dict(db=db)
+
+# přidej tohle:
 @app.route('/admin')
 @login_required
 @role_required('admin')
@@ -332,61 +358,105 @@ def logout():
 @login_required
 def cashier():
     tables_list = Table.query.order_by(Table.id).all()
-    return render_template('cashier.html', tables=tables_list, session_obj=None, items=None, title='Pokladna')
+    return render_template('cashier.html', tables=tables_list, order=None, items=None, title='Pokladna')
 
-# otevřít (nebo znovu použít) session pro stůl
 @app.route('/cashier/open/<int:table_id>')
 @login_required
 def cashier_open(table_id):
-    # zkontroluj existující otevřenou session
-    sess = TableSession.query.filter_by(table_id=table_id, closed_at=None).first()
-    if not sess:
-        sess = TableSession(table_id=table_id)
-        db.session.add(sess)
+    order = Order.query.filter_by(table_id=table_id, closed_at=None).order_by(Order.opened_at.desc()).first()
+    if not order:
+        order = Order(table_id=table_id, opened_at=datetime.utcnow())
+        db.session.add(order)
         db.session.commit()
-    return redirect(url_for('cashier_session', session_id=sess.id))
+    return redirect(url_for('cashier_order', order_id=order.id))
 
-# zobrazení session s položkami
-@app.route('/cashier/session/<int:session_id>')
+# Opustit stůl (neuzavírá účet, pouze se vrátí na seznam stolů)
+@app.route('/cashier/leave/<int:order_id>')
 @login_required
-def cashier_session(session_id):
-    sess = TableSession.query.get(session_id)
-    if not sess:
-        flash('Session nenalezena.', 'danger')
+def cashier_leave(order_id):
+    return redirect(url_for('cashier'))
+
+# Zobrazení otevřeného účtu s položkami a seznamem položek k přidání
+@app.route('/cashier/order/<int:order_id>')
+@login_required
+def cashier_order(order_id):
+    order = Order.query.get(order_id)
+    if not order:
+        flash('Účet nenalezen.', 'danger')
         return redirect(url_for('cashier'))
     items = Item.query.all()
-    # načti existující položky pro session (seřazeny dle času)
-    entries = sess.entries.order_by(TableItemEntry.timestamp).all()
-    return render_template('cashier.html', tables=None, session_obj=sess, items=items, entries=entries, title=f'Pokladna - {sess.table.name}')
+    order_items = order.items.order_by(OrderItem.timestamp).all()
+    return render_template('cashier.html', tables=None, order=order, items=items, order_items=order_items, title=f'Pokladna - {order.table.name}')
 
-# přidat položku do otevřené session
-@app.route('/cashier/session/<int:session_id>/add_item', methods=['POST'])
+# přidat položku do účtu
+@app.route('/cashier/order/<int:order_id>/add_item', methods=['POST'])
 @login_required
-def cashier_add_item(session_id):
-    sess = TableSession.query.get(session_id)
-    if not sess:
-        flash('Session nenalezena.', 'danger')
+def cashier_add_item(order_id):
+    order = Order.query.get(order_id)
+    if not order or order.closed_at is not None:
+        flash('Nelze přidat položku do neexistujícího/uzavřeného účtu.', 'danger')
         return redirect(url_for('cashier'))
     item_id = request.form.get('item_id')
+    qty = int(request.form.get('quantity', 1) or 1)
     if not item_id:
         flash('Chyba: položka nebyla zvolena.', 'danger')
-        return redirect(url_for('cashier_session', session_id=session_id))
-    entry = TableItemEntry(session_id=sess.id, item_id=int(item_id), quantity=int(request.form.get('quantity', 1)))
-    db.session.add(entry)
+        return redirect(url_for('cashier_order', order_id=order_id))
+    item = Item.query.get(int(item_id))
+    if not item:
+        flash('Položka nenalezena.', 'danger')
+        return redirect(url_for('cashier_order', order_id=order_id))
+    oi = OrderItem(order_id=order.id, item_id=item.id, quantity=qty, price=item.price, timestamp=datetime.utcnow())
+    db.session.add(oi)
     db.session.commit()
-    flash('Položka přidána ke stolu.', 'success')
-    return redirect(url_for('cashier_session', session_id=session_id))
+    flash('Položka přidána do účtu.', 'success')
+    return redirect(url_for('cashier_order', order_id=order_id))
 
-# zavřít session (volitelně)
-@app.route('/cashier/session/<int:session_id>/close', methods=['POST'])
+# Náhled uzavření účtu (soupis + celkem)
+@app.route('/cashier/order/<int:order_id>/close_preview')
 @login_required
-def cashier_close_session(session_id):
-    sess = TableSession.query.get(session_id)
-    if sess and sess.closed_at is None:
-        sess.closed_at = datetime.utcnow()
-        db.session.commit()
-        flash('Session uzavřena.', 'info')
-    return redirect(url_for('cashier'))
+def cashier_close_preview(order_id):
+    order = Order.query.get(order_id)
+    if not order:
+        flash('Účet nenalezen.', 'danger')
+        return redirect(url_for('cashier'))
+    items = order.items.order_by(OrderItem.timestamp).all()
+    total = sum((it.price or 0) * (it.quantity or 1) for it in items)
+    return render_template('cashier_close.html', order=order, items=items, total=total)
+
+# Zaplatit a uzavřít účet (vytvoří záznam closed_at)
+@app.route('/cashier/order/<int:order_id>/pay', methods=['POST'])
+@login_required
+def cashier_pay(order_id):
+    order = Order.query.get(order_id)
+    if not order or order.closed_at is not None:
+        flash('Účet nenalezen nebo je již uzavřen.', 'danger')
+        return redirect(url_for('cashier'))
+    items = order.items.order_by(OrderItem.timestamp).all()
+    total = sum((it.price or 0) * (it.quantity or 1) for it in items)
+    order.closed_at = datetime.utcnow()
+    db.session.commit()
+    # zobrazit stránku k tisku (receipt.html) nebo přesměrovat podle implementace
+    return render_template('receipt.html', order=order, items=items, total=total)
+
+@app.route('/closed_orders')
+@login_required
+@role_required('admin', 'manager')
+def closed_orders():
+    orders = Order.query.filter(Order.closed_at != None).order_by(Order.closed_at.desc()).all()
+    return render_template('closed_orders.html', orders=orders, title='Uzavřené účty')
+
+
+@app.route('/order/<int:order_id>')
+@login_required
+@role_required('admin', 'manager')
+def view_order(order_id):
+    order = Order.query.get(order_id)
+    if not order:
+        flash('Účet nenalezen.', 'danger')
+        return redirect(url_for('closed_orders'))
+    items = order.items.order_by(OrderItem.timestamp).all()
+    total = sum((it.price or 0) * (it.quantity or 1) for it in items)
+    return render_template('order_detail.html', order=order, items=items, total=total, title=f'Detail účtu #{order.id}')
 
 
 if __name__ == '__main__':
