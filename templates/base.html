@@ -1,4 +1,5 @@
-<!doctype html>
+<!-- COMMENTS: shift+option+A or whole line shift+cmd+ú in jinja {# whatever #} -->
+<!DOCTYPE html>
 <html lang="cs">
 <head>
 <meta charset="utf-8">
@@ -10,9 +11,14 @@
 </head>
 <body>
 <header class="navbar container">
+    <a class="home-link" href="{{ url_for('index') }}" title="Domů">
+      <img src="{{ url_for('static', filename='img/home.png') }}" alt="Domů" width="22" height="22" aria-hidden="true">
+    </a>
+    <a class="home-link" href="{{ url_for('index') }}" title="Pokladna">
+      <img src="{{ url_for('static', filename='img/cashier.png') }}" alt="Pokladna" width="22" height="22" aria-hidden="true">
+    </a>
 <div class="brand">
-<span class="badge">ITB</span>
-<span style="margin-left:10px">Vision</span>
+<span class="badge">MOJE APLIKACE</span>
 </div>
 <div class="nav-actions">
 {% if session.get('user_id') %}
@@ -44,7 +50,7 @@
 {% block content %}{% endblock %}
 
 
-<div class="footer">© {{ 2025 }} • ITB Vision — minimalní & moderní</div>
+<div class="footer">© {{ 2025 }} • ITB Vision s.r.o.</div>
 </main>
 
 

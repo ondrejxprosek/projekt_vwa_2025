@@ -128,7 +128,7 @@ def delete_user(user_id):
 def admin_items():
     user = User.query.get(session['user_id'])
     items = Item.query.all()
-    return render_template('admin_items.html', items=items, user=user)
+    return render_template('admin_items.html', title='Přehled položek', items=items, user=user)
 
 
 @app.route('/admin/items/add', methods=['POST'])
