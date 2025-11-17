@@ -1,38 +1,71 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="card">
-<div style="display:flex;justify-content:space-between;align-items:center">
 <div>
-<h3 style="margin:0">Vítej, {{ user.username }}</h3>
-<div class="small-muted">Role: {{ user.role }}</div>
-</div>
-<div>
-<span class="badge">Položek: {{ items|length }}</span>
-</div>
+  <h1 class="h1">Dashboard</h1>
+  <p class="small-muted">Přehled systému</p>
 </div>
 
+<!-- Statistiky -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px;">
+  <div class="card" style="text-align:center;padding:20px;">
+    <div class="small-muted">Položky v nabídce</div>
+    <div style="font-size:32px;font-weight:700;margin-top:8px;color:var(--accent);">{{ total_items }}</div>
+  </div>
+  
+  <div class="card" style="text-align:center;padding:20px;">
+    <div class="small-muted">Stoly</div>
+    <div style="font-size:32px;font-weight:700;margin-top:8px;color:var(--accent);">{{ total_tables }}</div>
+  </div>
+  
+  <div class="card" style="text-align:center;padding:20px;">
+    <div class="small-muted">Uživatelé</div>
+    <div style="font-size:32px;font-weight:700;margin-top:8px;color:var(--accent);">{{ total_users }}</div>
+  </div>
+</div>
 
-{% if user.role in ['admin','manager'] %}
-<form method="POST" action="{{ url_for('admin_items_add') }}" style="margin-top:16px" class="form-inline">
-<input class="input" name="name" placeholder="Název nové položky" required>
-<input class="input" name="description" placeholder="Popis (volitelně)">
-<button class="btn glow" type="submit">Přidat</button>
-</form>
-{% endif %}
+<!-- Tržby za datum -->
+<div class="card" style="margin-top:20px;padding:20px;">
+  <h3 style="margin:0 0 12px 0;">Tržby za den</h3>
+  
+  <form method="GET" style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
+    <input 
+      type="date" 
+      name="date" 
+      value="{{ date_filter }}" 
+      class="input" 
+      style="max-width:200px;"
+    >
+    <button class="btn" type="submit">Filtrovat</button>
+    <a class="btn" href="{{ url_for('index') }}">Dnes</a>
+  </form>
+  
+  <div style="padding:16px;background:linear-gradient(90deg, rgba(124,92,255,0.1), rgba(0,230,168,0.1));border-radius:10px;text-align:center;">
+    <div class="small-muted">Celková tržba {{ date_filter }}</div>
+    <div style="font-size:36px;font-weight:700;margin-top:8px;color:var(--accent);">
+      {{ "%.2f"|format(daily_revenue) }} Kč
+    </div>
+  </div>
+</div>
 
+<!-- Rychlé akce -->
+<div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+  {% if perms.can_cashier %}
+  <a class="btn glow" href="{{ url_for('cashier') }}" style="flex:1;min-width:150px;text-align:center;padding:14px;">
+    🧾 Pokladna
+  </a>
+  {% endif %}
+  
+  {% if perms.can_view_closed_orders %}
+  <a class="btn" href="{{ url_for('closed_orders') }}" style="flex:1;min-width:150px;text-align:center;padding:14px;">
+    📊 Uzavřené účty
+  </a>
+  {% endif %}
+  
+  {% if perms.can_manage_items %}
+  <a class="btn" href="{{ url_for('admin_items') }}" style="flex:1;min-width:150px;text-align:center;padding:14px;">
+    📦 Položky
+  </a>
+  {% endif %}
+</div>
 
-<div class="list">
-{% for it in items %}
-<div class="list-item">
-<div>
-<div style="font-weight:600">{{ it.name }}</div>
-<div class="small-muted">{{ it.description or 'Bez popisu' }}</div>
-</div>
-<div class="kv">ID {{ it.id }}</div>
-</div>
-{% else %}
-<div class="small-muted">Žádné položky.</div>
-{% endfor %}
-</div>
-</div>
 {% endblock %}

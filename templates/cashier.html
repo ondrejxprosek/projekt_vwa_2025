@@ -2,10 +2,11 @@
 {% block content %}
 
 {% if tables is not none %}
+  <!-- Seznam stolů -->
   <h2 class="h1">Stoly</h2>
   <div class="items-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px;">
     {% for table in tables %}
-    {% set open_order = table.orders.filter_by(closed_at=None).order_by(db.desc('opened_at')).first() %}
+    {% set open_order = table.open_order %}
     <div class="card item-card" style="padding:14px;{% if open_order %}background:linear-gradient(135deg, rgba(124,92,255,0.15), rgba(0,230,168,0.1));border:2px solid rgba(124,92,255,0.3);{% endif %}">
       <div>
         <div style="font-weight:700;font-size:18px">{{ table.name }}</div>
@@ -22,7 +23,9 @@
         {% endif %}
       </div>
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <a class="btn" href="{{ url_for('cashier_open', table_id=table.id) }}" style="flex:1;text-align:center;">{% if open_order %}Pokračovat{% else %}Otevři stůl{% endif %}</a>
+        <a class="btn" href="{{ url_for('cashier_open', table_id=table.id) }}" style="flex:1;text-align:center;">
+          {% if open_order %}Pokračovat{% else %}Otevři stůl{% endif %}
+        </a>
       </div>
     </div>
     {% else %}

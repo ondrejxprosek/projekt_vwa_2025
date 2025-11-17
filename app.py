@@ -2,8 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-import os
 from datetime import datetime
+import os  # ← přidáno
 
 app = Flask(__name__)
 app.secret_key = 'super_tajne_heslo'  # změň si!
@@ -13,7 +13,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+db = SQLAlchemy(app)  # ← přidáno
 
 
 # --- MODELY ---
@@ -83,6 +83,15 @@ class OrderItem(db.Model):
     order = db.relationship('Order', backref=db.backref('items', lazy='dynamic'))
     item = db.relationship('Item')
 
+class Permission(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    role = db.Column(db.String(50), unique=True, nullable=False)  # 'user' | 'manager' | 'admin'
+    can_cashier = db.Column(db.Boolean, default=False)
+    can_view_closed_orders = db.Column(db.Boolean, default=False)
+    can_manage_tables = db.Column(db.Boolean, default=False)
+    can_manage_items = db.Column(db.Boolean, default=False)
+    can_manage_users = db.Column(db.Boolean, default=False)
+
 # --- DEKORÁTORY ---
 def login_required(f):
     @wraps(f)
@@ -111,9 +120,41 @@ def role_required(*roles):
 @app.route('/')
 @login_required
 def index():
-    user = User.query.get(session['user_id'])
-    items = Item.query.all()
-    return render_template('index.html', items=items, user=user)
+    # Základní statistiky
+    total_items = Item.query.count()
+    total_tables = Table.query.count()
+    total_users = User.query.count()
+    
+    # Filtr tržeb – výchozí dnešní den
+    date_filter = request.args.get('date', datetime.utcnow().strftime('%Y-%m-%d'))
+    try:
+        filter_date = datetime.strptime(date_filter, '%Y-%m-%d')
+    except ValueError:
+        filter_date = datetime.utcnow()
+    
+    # Tržby za zvolený den (uzavřené účty)
+    start_of_day = filter_date.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_day = filter_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+    
+    closed_orders = Order.query.filter(
+        Order.closed_at >= start_of_day,
+        Order.closed_at <= end_of_day
+    ).all()
+    
+    daily_revenue = 0.0
+    for order in closed_orders:
+        for item in order.items:
+            daily_revenue += (item.price or 0) * (item.quantity or 1)
+    
+    return render_template(
+        'index.html',
+        total_items=total_items,
+        total_tables=total_tables,
+        total_users=total_users,
+        daily_revenue=daily_revenue,
+        date_filter=filter_date.strftime('%Y-%m-%d'),
+        title='Dashboard'
+    )
 
 @app.context_processor
 def inject_user_model():
@@ -122,6 +163,36 @@ def inject_user_model():
 @app.context_processor
 def inject_db():
     return dict(db=db)
+
+@app.context_processor
+def inject_auth():
+    u = None
+    perms = dict(
+        can_cashier=False,
+        can_view_closed_orders=False,
+        can_manage_tables=False,
+        can_manage_items=False,
+        can_manage_users=False,
+    )
+    if 'user_id' in session:
+        u = User.query.get(session['user_id'])
+        if u:
+            if u.role == 'admin':
+                # Admin má všechna práva
+                for k in perms.keys():
+                    perms[k] = True
+            else:
+                p = Permission.query.filter_by(role=u.role).first()
+                if p:
+                    perms.update(dict(
+                        can_cashier=p.can_cashier,
+                        can_view_closed_orders=p.can_view_closed_orders,
+                        can_manage_tables=p.can_manage_tables,
+                        can_manage_items=p.can_manage_items,
+                        can_manage_users=p.can_manage_users,
+                    ))
+    # aliasy pro staré šablony
+    return dict(current_user=u, perms=perms, user=u, me=u)
 
 # přidej tohle:
 @app.route('/admin')
@@ -459,7 +530,33 @@ def view_order(order_id):
     return render_template('order_detail.html', order=order, items=items, total=total, title=f'Detail účtu #{order.id}')
 
 
+def ensure_schema():
+    try:
+        if db.engine.url.get_backend_name() == 'sqlite':
+            with db.engine.begin() as conn:
+                cols = [row[1] for row in conn.execute(db.text("PRAGMA table_info(item)")).fetchall()]
+                if 'created_at' not in cols:
+                    conn.execute(db.text("ALTER TABLE item ADD COLUMN created_at DATETIME"))
+                    conn.execute(db.text("UPDATE item SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL"))
+    except Exception as e:
+        app.logger.error(f'ensure_schema failed: {e}')
+
+
+def ensure_default_permissions():
+    defaults = {
+        'admin':   dict(can_cashier=True, can_view_closed_orders=True, can_manage_tables=True, can_manage_items=True, can_manage_users=True),
+        'manager': dict(can_cashier=True, can_view_closed_orders=True, can_manage_tables=True, can_manage_items=True, can_manage_users=False),
+        'user':    dict(can_cashier=True, can_view_closed_orders=False, can_manage_tables=False, can_manage_items=False, can_manage_users=False),
+    }
+    for role, flags in defaults.items():
+        perm = Permission.query.filter_by(role=role).first()
+        if not perm:
+            db.session.add(Permission(role=role, **flags))
+    db.session.commit()
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        ensure_schema()  # pro item.created_at
+        ensure_default_permissions()  # pro Permission
     app.run(debug=True)

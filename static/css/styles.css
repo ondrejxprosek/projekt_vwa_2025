@@ -14,8 +14,21 @@ html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a 0%, var
 .btn:hover{border-color:rgba(124,92,255,0.8);color:#fff}
 .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:18px;border-radius:14px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
 .center-viewport{min-height:70vh;display:flex;align-items:center;justify-content:center}
-.input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#fff}
+.input, input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="date"], textarea {
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.02);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+}
 .input::placeholder{color:var(--muted)}
+.input:focus, input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(124,92,255,0.05);
+}
 .form-row{display:flex;gap:10px} /* gap je mezera mezi bloky */
 .h1{font-size:20px;margin:0 0 12px 0}
 .hint{color:var(--muted);font-size:13px}
