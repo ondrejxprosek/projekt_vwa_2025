@@ -429,7 +429,20 @@ def logout():
 @login_required
 def cashier():
     tables_list = Table.query.order_by(Table.id).all()
-    return render_template('cashier.html', tables=tables_list, order=None, items=None, title='Pokladna')
+    # Načti otevřený účet pro každý stůl
+    for table in tables_list:
+        table.open_order = Order.query.filter_by(
+            table_id=table.id, 
+            closed_at=None
+        ).order_by(Order.opened_at.desc()).first()
+    
+    return render_template(
+        'cashier.html', 
+        tables=tables_list, 
+        order=None, 
+        items=None, 
+        title='Pokladna'
+    )
 
 @app.route('/cashier/open/<int:table_id>')
 @login_required

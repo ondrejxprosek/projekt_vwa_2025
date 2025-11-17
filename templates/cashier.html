@@ -1,40 +1,41 @@
 {% extends 'base.html' %}
 {% block content %}
 
-{% if tables is not none %}
-  <!-- Seznam stolů -->
+{% if tables %}
   <h2 class="h1">Stoly</h2>
-  <div class="items-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px;">
     {% for table in tables %}
     {% set open_order = table.open_order %}
-    <div class="card item-card" style="padding:14px;{% if open_order %}background:linear-gradient(135deg, rgba(124,92,255,0.15), rgba(0,230,168,0.1));border:2px solid rgba(124,92,255,0.3);{% endif %}">
-      <div>
-        <div style="font-weight:700;font-size:18px">{{ table.name }}</div>
-        <div class="small-muted" style="margin-top:8px">{{ table.description or 'Bez popisu' }}</div>
-        {% if open_order %}
-        <div style="margin-top:12px;font-size:16px;font-weight:700;color:var(--accent);">
-          {% set ns = namespace(total=0) %}
-          {% for oi in open_order.items %}
-            {% set ns.total = ns.total + (oi.price * oi.quantity) %}
-          {% endfor %}
-          {{ "%.2f"|format(ns.total) }} Kč
+    <div class="card" style="padding:14px;{% if open_order %}background:linear-gradient(135deg, rgba(124,92,255,0.15), rgba(0,230,168,0.1));border:2px solid rgba(124,92,255,0.3);{% endif %}">
+      <div style="font-weight:700;font-size:18px">{{ table.name }}</div>
+      <div class="small-muted" style="margin-top:4px;">{{ table.description or 'Bez popisu' }}</div>
+      
+      {% if open_order %}
+        {% set ns = namespace(total=0, last_timestamp=None) %}
+        {% for oi in open_order.items %}
+          {% set ns.total = ns.total + (oi.price * oi.quantity) %}
+          {% if not ns.last_timestamp or oi.timestamp > ns.last_timestamp %}
+            {% set ns.last_timestamp = oi.timestamp %}
+          {% endif %}
+        {% endfor %}
+        
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);">
+          <div style="font-size:20px;font-weight:700;color:var(--accent);">{{ "%.2f"|format(ns.total) }} Kč</div>
+          {% if ns.last_timestamp %}
+          <div class="small-muted" style="font-size:12px;margin-top:4px;">Poslední: {{ ns.last_timestamp.strftime('%H:%M:%S') }}</div>
+          {% endif %}
+          <div class="small-muted" style="font-size:11px;margin-top:2px;">Účet #{{ open_order.id }}</div>
         </div>
-        <div class="small-muted" style="font-size:12px;margin-top:4px;">Účet #{{ open_order.id }}</div>
-        {% endif %}
-      </div>
-      <div style="display:flex;gap:8px;margin-top:10px;">
-        <a class="btn" href="{{ url_for('cashier_open', table_id=table.id) }}" style="flex:1;text-align:center;">
-          {% if open_order %}Pokračovat{% else %}Otevři stůl{% endif %}
-        </a>
-      </div>
+      {% endif %}
+      
+      <a class="btn glow" href="{{ url_for('cashier_open', table_id=table.id) }}" style="width:100%;text-align:center;padding:10px;margin-top:12px;display:block;">
+        {% if open_order %}Pokračovat{% else %}Otevřít stůl{% endif %}
+      </a>
     </div>
-    {% else %}
-    <p class="hint">Žádné stoly.</p>
     {% endfor %}
   </div>
 
 {% else %}
-  <!-- Otevřený účet / stůl -->
   <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div>
       <h2 class="h1">Stůl: {{ order.table.name }}</h2>
@@ -43,13 +44,13 @@
       <div style="margin-top:4px;font-size:13px;color:var(--muted)">Účet #{{ order.id }}</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <a class="btn" href="{{ url_for('cashier_leave', order_id=order.id) }}">Opustit stůl</a>
-      <a class="btn" href="{{ url_for('cashier_close_preview', order_id=order.id) }}">Uzavřít stůl</a>
+      <a class="btn" href="{{ url_for('cashier_leave', order_id=order.id) }}">Opustit</a>
+      <a class="btn" href="{{ url_for('cashier_close_preview', order_id=order.id) }}">Uzavřít</a>
     </div>
   </div>
 
   <h3 style="margin-top:18px">Položky k přidání</h3>
-  <div class="items-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px;">
     {% for item in items %}
     <div class="card" style="padding:18px;text-align:center;">
       <div style="font-weight:700">{{ item.name }}</div>
@@ -71,7 +72,7 @@
       {% for oi in order_items %}
       <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;margin-bottom:8px;">
         <div>
-          <div style="font-weight:700">{{ oi.item.name }}{% if oi.quantity and oi.quantity > 1 %} ×{{ oi.quantity }}{% endif %}</div>
+          <div style="font-weight:700">{{ oi.item.name }}{% if oi.quantity > 1 %} ×{{ oi.quantity }}{% endif %}</div>
           <div class="small-muted" style="font-size:13px">{{ oi.timestamp.strftime('%H:%M:%S') }}</div>
         </div>
         <div style="font-weight:700">{{ "%.2f"|format(oi.price * oi.quantity) }} Kč</div>
@@ -79,8 +80,7 @@
       {% set ns.total = ns.total + (oi.price * oi.quantity) %}
       {% endfor %}
       
-      <!-- Součet -->
-      <div class="card" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;margin-top:12px;border-top:2px solid rgba(124,92,255,0.2);font-weight:700;font-size:16px;">
+      <div class="card" style="display:flex;justify-content:space-between;padding:12px 14px;margin-top:12px;border-top:2px solid rgba(124,92,255,0.2);font-weight:700;font-size:16px;">
         <div>Celkem</div>
         <div style="color:var(--accent);">{{ "%.2f"|format(ns.total) }} Kč</div>
       </div>
@@ -88,7 +88,6 @@
       <p class="hint">Zatím žádné položky.</p>
     {% endif %}
   </div>
-
 {% endif %}
 
 {% endblock %}
