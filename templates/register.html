@@ -1,26 +1,44 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="center-viewport">
-<div class="card" style="width:520px">
-<h3 class="h1">Vytvořit účet</h3>
-<p class="hint">Vyplň uživatelské jméno, heslo a roli</p>
-<form method="POST" class="mt-3">
-<div class="form-row">
-<input class="input" name="username" placeholder="Uživatelské jméno" required>
-<input class="input" name="password" type="password" placeholder="Heslo" required>
+
+<div class="form-container">
+  <h2 class="h1">Registrace</h2>
+  
+  <form method="POST" class="form">
+    <div class="form-group">
+      <label for="username">Uživatelské jméno</label>
+      <input type="text" name="username" id="username" class="input" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Heslo</label>
+      <input type="password" name="password" id="password" class="input" required>
+    </div>
+    
+    {% if not admin_exists %}
+    <!-- Zobraz výběr role pouze pokud neexistuje admin -->
+    <div class="form-group">
+      <label for="role">Role</label>
+      <select name="role" id="role" class="input">
+        <option value="user">User</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    {% else %}
+    <!-- Pokud existuje admin, skryj výběr (automaticky user) -->
+    <input type="hidden" name="role" value="user">
+    <div class="hint" style="margin-bottom:16px;">
+      ℹ️ Noví uživatelé se registrují s rolí <strong>User</strong>. Admin může později změnit roli.
+    </div>
+    {% endif %}
+    
+    <button type="submit" class="btn glow">Registrovat se</button>
+  </form>
+  
+  <div style="margin-top:16px;text-align:center;">
+    <a href="{{ url_for('login') }}" class="small-muted">Již máš účet? Přihlas se</a>
+  </div>
 </div>
-<div style="height:10px"></div>
-<label class="small-muted">Role</label>
-<select name="role" class="input">
-<option value="user">user</option>
-<option value="manager">manager</option>
-<option value="admin">admin</option>
-</select>
-<div style="height:12px"></div>
-<div class="form-row">
-<button class="btn glow" type="submit" style="flex:1">Registrovat</button>
-</div>
-</form>
-</div>
-</div>
+
 {% endblock %}

@@ -31,7 +31,14 @@ html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a 0%, var
 }
 .form-row{display:flex;gap:10px} /* gap je mezera mezi bloky */
 .h1{font-size:20px;margin:0 0 12px 0}
-.hint{color:var(--muted);font-size:13px}
+.hint {
+  padding: 12px;
+  background: rgba(124, 92, 255, 0.1);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
 .flash{padding:10px;border-radius:10px;margin-bottom:12px}
 .flash-success{background:linear-gradient(90deg, rgba(55, 177, 153, 0.06), rgba(102, 71, 225, 0.03));border-left:4px solid var(--accent)}
 .flash-danger{background:linear-gradient(90deg, rgba(255,64,64,0.03), rgba(255,255,255,0.01));border-left:4px solid #ff6b6b}

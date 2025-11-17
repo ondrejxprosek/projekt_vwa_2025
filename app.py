@@ -378,10 +378,18 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    # Zkontroluj, zda existuje admin
+    admin_exists = User.query.filter_by(role='admin').first() is not None
+    
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        role = request.form.get('role', 'user')
+        
+        # Pokud existuje admin, nový uživatel může být jen 'user'
+        if admin_exists:
+            role = 'user'
+        else:
+            role = request.form.get('role', 'user')
 
         if User.query.filter_by(username=username).first():
             flash('Uživatel již existuje.', 'warning')
@@ -394,7 +402,7 @@ def register():
         flash('Registrace úspěšná. Nyní se přihlaš.', 'success')
         return redirect(url_for('login'))
 
-    return render_template('register.html')
+    return render_template('register.html', admin_exists=admin_exists)
 
 @app.route('/admin/add_user', methods=['POST'])
 @login_required
