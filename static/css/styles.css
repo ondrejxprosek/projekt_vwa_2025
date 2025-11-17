@@ -99,3 +99,62 @@ label {
   cursor: pointer;
   user-select: none;
 }
+
+/* Hamburger button */
+.hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  margin-left: auto;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Ujisti se, že header je relativní pro absolutní menu */
+header.navbar { position: relative; }
+
+/* Desktop výchozí */
+.nav-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .hamburger { display: inline-flex; }
+
+  /* Skryj akce, zobraz po togglu jako panel */
+  .nav-actions {
+    display: none;
+    position: absolute;
+    right: 0; top: 56px;
+    width: min(85vw, 320px);
+    padding: 12px;
+    background: rgba(20,20,25,0.95);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+    flex-direction: column;
+    align-items: stretch;
+    z-index: 1000;
+  }
+  .nav-actions.is-open { display: flex; }
+
+  .nav-actions .kv {
+    padding: 8px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .nav-actions .btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}

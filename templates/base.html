@@ -17,23 +17,33 @@
     <a class="home-link" href="{{ url_for('cashier') }}" title="Pokladna">
       <img src="{{ url_for('static', filename='img/cashier.png') }}" alt="Pokladna" width="22" height="22" aria-hidden="true">
     </a>
-<div class="brand">
-<span class="badge" id="current-datetime">MOJE APLIKACE</span>
-</div>
-<div class="nav-actions">
-{% if session.get('user_id') %}
-<div class="kv">{{ current_user.username }} • <span class="small-muted">{{ current_user.role }}</span></div>
-{% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_panel') }}">Uživatelé</a>{% endif %}
-{% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_permissions') }}">Role a práva</a>{% endif %}
-{% if perms.can_manage_tables %}<a class="btn" href="{{ url_for('tables') }}">Stoly</a>{% endif %}
-{% if perms.can_manage_items %}<a class="btn" href="{{ url_for('admin_items') }}">Položky</a>{% endif %}
-{% if perms.can_view_closed_orders %}<a class="btn" href="{{ url_for('closed_orders') }}">Uzavřené účty</a>{% endif %}
-<a class="btn" href="{{ url_for('logout') }}">Odhlásit</a>
-{% else %}
-<a class="btn" href="{{ url_for('login') }}">Přihlásit</a>
-<a class="btn" href="{{ url_for('register') }}">Registrovat</a>
-{% endif %}
-</div>
+
+    <div class="brand">
+      <span class="badge" id="current-datetime">MOJE APLIKACE</span>
+    </div>
+
+    <!-- NOVĚ: hamburger tlačítko -->
+    <button class="hamburger" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="navActions">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M3 6h18M3 12h18M3 18h18"></path>
+      </svg>
+    </button>
+
+    <!-- Přidej id pro JS toggle -->
+    <div class="nav-actions" id="navActions">
+      {% if session.get('user_id') %}
+      <div class="kv">{{ current_user.username }} • <span class="small-muted">{{ current_user.role }}</span></div>
+      {% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_panel') }}">Uživatelé</a>{% endif %}
+      {% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_permissions') }}">Role a práva</a>{% endif %}
+      {% if perms.can_manage_tables %}<a class="btn" href="{{ url_for('tables') }}">Stoly</a>{% endif %}
+      {% if perms.can_manage_items %}<a class="btn" href="{{ url_for('admin_items') }}">Položky</a>{% endif %}
+      {% if perms.can_view_closed_orders %}<a class="btn" href="{{ url_for('closed_orders') }}">Uzavřené účty</a>{% endif %}
+      <a class="btn" href="{{ url_for('logout') }}">Odhlásit</a>
+      {% else %}
+      <a class="btn" href="{{ url_for('login') }}">Přihlásit</a>
+      <a class="btn" href="{{ url_for('register') }}">Registrovat</a>
+      {% endif %}
+    </div>
 </header>
 
 
@@ -73,6 +83,33 @@ function updateDateTime() {
 
 updateDateTime();
 setInterval(updateDateTime, 1000);
+
+// Mobile hamburger toggle
+(function () {
+  const btn = document.getElementById('menuBtn');
+  const nav = document.getElementById('navActions');
+  if (!btn || !nav) return;
+
+  btn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    const open = nav.classList.toggle('is-open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!nav.contains(e.target) && !btn.contains(e.target)) {
+      nav.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  window.addEventListener('resize', function () {
+    if (window.innerWidth > 768) {
+      nav.classList.remove('is-open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+})();
 </script>
 
 </body>
