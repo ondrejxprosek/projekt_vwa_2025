@@ -82,3 +82,13 @@ html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a 0%, var
 .home-link:hover {
     background: #f2f2f2;
 }
+/* Checkboxy */
+input[type="checkbox"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+label {
+  cursor: pointer;
+  user-select: none;
+}

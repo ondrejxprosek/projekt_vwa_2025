@@ -24,7 +24,8 @@
 {% if session.get('user_id') %}
 {% set me = User.query.get(session.get('user_id')) %}
 <div class="kv">{{ me.username }} • <span class="small-muted">{{ me.role }}</span></div>
-{% if me.role == 'admin' %}<a class="btn" href="{{ url_for('admin_panel') }}">Uživatelé</a>{% endif %}
+{% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_panel') }}">Uživatelé</a>{% endif %}
+{% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_permissions') }}">Role a práva</a>{% endif %}
 {% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('tables') }}">Stoly</a>{% endif %}
 {% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('admin_items') }}">Položky</a>{% endif %}
 {% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('closed_orders') }}">Uzavřené účty</a>{% endif %}

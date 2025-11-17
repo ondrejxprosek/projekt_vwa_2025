@@ -530,6 +530,35 @@ def view_order(order_id):
     return render_template('order_detail.html', order=order, items=items, total=total, title=f'Detail účtu #{order.id}')
 
 
+@app.route('/admin/permissions', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
+def admin_permissions():
+    if request.method == 'POST':
+        role = request.form.get('role')
+        perm = Permission.query.filter_by(role=role).first()
+        if not perm:
+            perm = Permission(role=role)
+            db.session.add(perm)
+        
+        perm.can_cashier = 'can_cashier' in request.form
+        perm.can_view_closed_orders = 'can_view_closed_orders' in request.form
+        perm.can_manage_tables = 'can_manage_tables' in request.form
+        perm.can_manage_items = 'can_manage_items' in request.form
+        perm.can_manage_users = 'can_manage_users' in request.form
+        
+        db.session.commit()
+        flash(f'Práva pro roli "{role}" aktualizována.', 'success')
+        return redirect(url_for('admin_permissions'))
+    
+    permissions = Permission.query.all()
+    # Ujisti se, že všechny role existují v DB
+    for role_name in ['user', 'manager', 'admin']:
+        if not any(p.role == role_name for p in permissions):
+            permissions.append(Permission(role=role_name))
+    
+    return render_template('admin_permissions.html', permissions=permissions, title='Správa práv')
+
 def ensure_schema():
     try:
         if db.engine.url.get_backend_name() == 'sqlite':

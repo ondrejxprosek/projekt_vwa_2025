@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block content %}
+<div>
+  <h1 class="h1">Správa práv</h1>
+  <p class="small-muted">Nastavte přístupová práva pro jednotlivé role</p>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:20px;">
+  {% set roles = ['user', 'manager', 'admin'] %}
+  {% for role_name in roles %}
+    {% set perm = permissions | selectattr('role', 'equalto', role_name) | first %}
+    
+    <div class="card" style="padding:20px;">
+      <form method="POST">
+        <input type="hidden" name="role" value="{{ role_name }}">
+        
+        <h3 style="margin:0 0 16px 0;text-transform:uppercase;font-weight:700;color:var(--accent);">
+          {{ role_name }}
+        </h3>
+        
+        <label style="display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;">
+          <input 
+            type="checkbox" 
+            name="can_cashier" 
+            {% if perm and perm.can_cashier %}checked{% endif %}
+            style="width:18px;height:18px;cursor:pointer;"
+          >
+          <span>📊 Přístup k pokladně</span>
+        </label>
+        
+        <label style="display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;">
+          <input 
+            type="checkbox" 
+            name="can_view_closed_orders" 
+            {% if perm and perm.can_view_closed_orders %}checked{% endif %}
+            style="width:18px;height:18px;cursor:pointer;"
+          >
+          <span>📋 Prohlížet uzavřené účty</span>
+        </label>
+        
+        <label style="display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;">
+          <input 
+            type="checkbox" 
+            name="can_manage_tables" 
+            {% if perm and perm.can_manage_tables %}checked{% endif %}
+            style="width:18px;height:18px;cursor:pointer;"
+          >
+          <span>🪑 Spravovat stoly</span>
+        </label>
+        
+        <label style="display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;">
+          <input 
+            type="checkbox" 
+            name="can_manage_items" 
+            {% if perm and perm.can_manage_items %}checked{% endif %}
+            style="width:18px;height:18px;cursor:pointer;"
+          >
+          <span>📦 Spravovat položky</span>
+        </label>
+        
+        <label style="display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;">
+          <input 
+            type="checkbox" 
+            name="can_manage_users" 
+            {% if perm and perm.can_manage_users %}checked{% endif %}
+            style="width:18px;height:18px;cursor:pointer;"
+          >
+          <span>👥 Spravovat uživatele</span>
+        </label>
+        
+        <button class="btn glow" type="submit" style="width:100%;padding:12px;font-weight:700;">
+          Uložit práva
+        </button>
+      </form>
+    </div>
+  {% endfor %}
+</div>
+
+<div class="card" style="margin-top:20px;padding:16px;background:rgba(124,92,255,0.05);">
+  <strong>ℹ️ Poznámka:</strong>
+  <ul style="margin:8px 0 0 20px;line-height:1.6;">
+    <li><strong>Admin</strong> má vždy všechna práva (nelze omezit)</li>
+    <li><strong>Manager</strong> – doporučeno: pokladna + stoly + položky</li>
+    <li><strong>User</strong> – základní uživatel, typicky jen pokladna</li>
+  </ul>
+</div>
+
+{% endblock %}
