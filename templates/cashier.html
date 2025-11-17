@@ -2,6 +2,7 @@
 {% block content %}
 
 {% if tables %}
+  <!-- Seznam stolů -->
   <h2 class="h1">Stoly</h2>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:16px;">
     {% for table in tables %}
@@ -35,7 +36,8 @@
     {% endfor %}
   </div>
 
-{% else %}
+{% elif order %}
+  <!-- Detail stolu (když je order != None) -->
   <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px;">
     <div>
       <h2 class="h1">Stůl: {{ order.table.name }}</h2>
@@ -88,6 +90,10 @@
       <p class="hint">Zatím žádné položky.</p>
     {% endif %}
   </div>
+
+{% else %}
+  <!-- Fallback (nemělo by nastat) -->
+  <p class="hint">Stoly nejsou definovány.</p>
 {% endif %}
 
 {% endblock %}
