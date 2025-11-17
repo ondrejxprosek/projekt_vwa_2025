@@ -4,6 +4,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime
 import os
+import pytz
+
+TIMEZONE = pytz.timezone('Europe/Prague')
+
+def local_now():
+    """Vrátí lokální čas zařízení"""
+    return datetime.now(TIMEZONE)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
@@ -22,6 +29,7 @@ class User(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='user')  # admin, manager, user
+    created_at = db.Column(db.DateTime, default=local_now)  # ← ZMĚŇ z datetime.utcnow
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password, method='pbkdf2:sha256', salt_length=16)
@@ -36,7 +44,7 @@ class Item(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255), nullable=True)
     price = db.Column(db.Float, nullable=False)  # přidej tohle
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=local_now)  # ← ZMĚŇ z datetime.utcnow
 
 class Table(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -66,7 +74,7 @@ class TableItemEntry(db.Model):
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
-    opened_at = db.Column(db.DateTime, default=datetime.utcnow)
+    opened_at = db.Column(db.DateTime, default=local_now)   # ← ZMĚŇ z datetime.utcnow
     closed_at = db.Column(db.DateTime, nullable=True)
     note = db.Column(db.String(255), nullable=True)
 
@@ -76,7 +84,7 @@ class OrderItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=local_now)   # ← ZMĚŇ z datetime.utcnow
     quantity = db.Column(db.Integer, default=1)
     price = db.Column(db.Float, nullable=False)  # cena v čase přidání
 
@@ -126,11 +134,12 @@ def index():
     total_users = User.query.count()
     
     # Filtr tržeb – výchozí dnešní den
-    date_filter = request.args.get('date', datetime.utcnow().strftime('%Y-%m-%d'))
+    date_filter = request.args.get('date', local_now().strftime('%Y-%m-%d'))  # ← ZMĚŇ
     try:
         filter_date = datetime.strptime(date_filter, '%Y-%m-%d')
+        filter_date = TIMEZONE.localize(filter_date)  # ← PŘIDEJ timezone
     except ValueError:
-        filter_date = datetime.utcnow()
+        filter_date = local_now()  # ← ZMĚŇ
     
     # Tržby za zvolený den (uzavřené účty)
     start_of_day = filter_date.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -458,7 +467,7 @@ def cashier():
 def cashier_open(table_id):
     order = Order.query.filter_by(table_id=table_id, closed_at=None).order_by(Order.opened_at.desc()).first()
     if not order:
-        order = Order(table_id=table_id, opened_at=datetime.utcnow())
+        order = Order(table_id=table_id, opened_at=local_now())  # ← ZMĚŇ
         db.session.add(order)
         db.session.commit()
     return redirect(url_for('cashier_order', order_id=order.id))
@@ -498,7 +507,13 @@ def cashier_add_item(order_id):
     if not item:
         flash('Položka nenalezena.', 'danger')
         return redirect(url_for('cashier_order', order_id=order_id))
-    oi = OrderItem(order_id=order.id, item_id=item.id, quantity=qty, price=item.price, timestamp=datetime.utcnow())
+    oi = OrderItem(
+        order_id=order.id,
+        item_id=item.id,
+        quantity=qty,
+        price=item.price,
+        timestamp=local_now()  # ← ZMĚŇ
+    )
     db.session.add(oi)
     db.session.commit()
     flash('Položka přidána do účtu.', 'success')
@@ -526,7 +541,7 @@ def cashier_pay(order_id):
         return redirect(url_for('cashier'))
     items = order.items.order_by(OrderItem.timestamp).all()
     total = sum((it.price or 0) * (it.quantity or 1) for it in items)
-    order.closed_at = datetime.utcnow()
+    order.closed_at = local_now()  # ← ZMĚŇ
     db.session.commit()
     # zobrazit stránku k tisku (receipt.html) nebo přesměrovat podle implementace
     return render_template('receipt.html', order=order, items=items, total=total)

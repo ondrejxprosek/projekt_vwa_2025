@@ -18,7 +18,7 @@
       <img src="{{ url_for('static', filename='img/cashier.png') }}" alt="Pokladna" width="22" height="22" aria-hidden="true">
     </a>
 <div class="brand">
-<span class="badge">MOJE APLIKACE</span>
+<span class="badge" id="current-datetime">MOJE APLIKACE</span>
 </div>
 <div class="nav-actions">
 {% if session.get('user_id') %}
@@ -51,20 +51,29 @@
 
 {% block content %}{% endblock %}
 
-{% if current_user %}
-<div style="background:rgba(255,0,0,0.1);padding:10px;margin:10px;font-size:12px;">
-  <strong>DEBUG:</strong> Role: {{ current_user.role }}<br>
-  can_cashier: {{ perms.can_cashier }}<br>
-  can_manage_tables: {{ perms.can_manage_tables }}<br>
-  can_manage_items: {{ perms.can_manage_items }}<br>
-  can_view_closed_orders: {{ perms.can_view_closed_orders }}<br>
-  can_manage_users: {{ perms.can_manage_users }}
-</div>
-{% endif %}
-
 <div class="footer">© {{ 2025 }} • ITB Vision s.r.o.</div>
 </main>
 
+<script>
+// Aktualizace data a času každou sekundu
+function updateDateTime() {
+    const now = new Date();
+    const options = {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    };
+    const formatted = now.toLocaleDateString('cs-CZ', options);
+    document.getElementById('current-datetime').textContent = formatted;
+}
+
+updateDateTime();
+setInterval(updateDateTime, 1000);
+</script>
 
 </body>
 </html>

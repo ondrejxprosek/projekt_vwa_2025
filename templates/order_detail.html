@@ -19,13 +19,6 @@
         <div class="small-muted">Uzavřeno</div>
         <div style="font-weight:700;font-size:14px;">{{ order.closed_at.strftime('%d.%m.%Y %H:%M:%S') }}</div>
       </div>
-      <div>
-        <div class="small-muted">Trvání</div>
-        <div style="font-weight:700;font-size:14px;">
-          {% set duration = (order.closed_at - order.opened_at).total_seconds() / 60 | int %}
-          {{ duration }} minut
-        </div>
-      </div>
     </div>
 
     <h3 style="margin-top:20px;margin-bottom:10px;">Položky</h3>
