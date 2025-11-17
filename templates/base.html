@@ -18,8 +18,14 @@
       <img src="{{ url_for('static', filename='img/cashier.png') }}" alt="Pokladna" width="22" height="22" aria-hidden="true">
     </a>
 
-    <div class="brand">
-      <span class="badge" id="current-datetime">MOJE APLIKACE</span>
+    <!-- Nahraď celý brand blok tímto -->
+    <div class="brand brand--minimal">
+      <!-- přidáno: logo aplikace -->
+      <img class="brand-logo" src="{{ url_for('static', filename='img/logo_pokladnicka.png') }}" alt="Pokladnička 2025">
+      <span id="current-datetime" class="datetime-muted">--:--:--</span>
+      {% if session.get('user_id') and current_user %}
+        <span class="brand-user">{{ current_user.username }} • <span class="small-muted">{{ current_user.role }}</span></span>
+      {% endif %}
     </div>
 
     <!-- NOVĚ: hamburger tlačítko -->
@@ -32,7 +38,6 @@
     <!-- Přidej id pro JS toggle -->
     <div class="nav-actions" id="navActions">
       {% if session.get('user_id') %}
-      <div class="kv">{{ current_user.username }} • <span class="small-muted">{{ current_user.role }}</span></div>
       {% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_panel') }}">Uživatelé</a>{% endif %}
       {% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_permissions') }}">Role a práva</a>{% endif %}
       {% if perms.can_manage_tables %}<a class="btn" href="{{ url_for('tables') }}">Stoly</a>{% endif %}
@@ -70,15 +75,17 @@ function updateDateTime() {
     const now = new Date();
     const options = {
         weekday: 'short',
-        day: 'numeric',
-        month: 'short',
+        day: '2-digit',
+        month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
     };
-    const formatted = now.toLocaleDateString('cs-CZ', options);
-    document.getElementById('current-datetime').textContent = formatted;
+    // Použij toLocaleString (ne toLocaleDateString), aby se zobrazil i čas
+    const formatted = now.toLocaleString('cs-CZ', options);
+    const el = document.getElementById('current-datetime');
+    if (el) el.textContent = formatted;
 }
 
 updateDateTime();

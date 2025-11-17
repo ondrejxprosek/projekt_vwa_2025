@@ -9,7 +9,7 @@
 *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
 html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a 0%, var(--bg) 100%);color:#e6eef6}
 .container{max-width:1100px;margin:40px auto;padding:0 20px}
-.brand{font-weight:700;letter-spacing:0.5px}
+.brand{font-weight:300;letter-spacing:0.5px}
 .btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
 .btn:hover{border-color:rgba(124,92,255,0.8);color:#fff}
 .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:18px;border-radius:14px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
@@ -44,8 +44,8 @@ html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a 0%, var
 .flash-danger{background:linear-gradient(90deg, rgba(255,64,64,0.03), rgba(255,255,255,0.01));border-left:4px solid #ff6b6b}
 .list{margin-top:12px}
 .list-item{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;background:var(--glass)}
-.badge{padding:10px 15px;border-radius:999px;font-weight:600;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#071018}
-.small-muted{color:var(--muted);font-size:13px}
+/* .badge{padding:10px 15px;border-radius:999px;font-weight:600;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#071018} */
+.small-muted{color:var(--muted);font-size:12px}
 .table{width:100%;border-collapse:collapse}
 .table th, .table td{padding:10px;text-align:left}
 .table thead th{color:var(--muted);font-size:13px}
@@ -125,7 +125,7 @@ header.navbar { position: relative; }
 }
 
 /* Mobile layout */
-@media (max-width: 768px) {
+@media (max-width: 920px) {
   .hamburger { display: inline-flex; }
 
   /* Skryj akce, zobraz po togglu jako panel */
@@ -150,11 +150,58 @@ header.navbar { position: relative; }
     padding: 8px 6px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 6px;
-    font-size: 13px;
+    font-size: 12px;
   }
   .nav-actions .btn {
     width: 100%;
     text-align: center;
     justify-content: center;
   }
+}
+
+/* Decentní datum/čas v brandu */
+.brand--minimal {
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.datetime-muted {
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+}
+.brand-user {
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+}
+.brand-logo {
+  height: 150px;
+  width: auto;
+  display: block;
+  margin: 0 0 4px 0; /* decentně nad časem/uživatelem */
+  opacity: 0.9;
+}
+@media (max-width: 768px) {
+  .brand-logo { height: 150px; }
+}
+
+.print-logo {
+  display: block;
+  margin: 0 auto 8px;
+  height: 32px;
+  width: auto;
+  opacity: 0.95;
+}
+@media print {
+  .print-logo { height: 32px; }
 }
