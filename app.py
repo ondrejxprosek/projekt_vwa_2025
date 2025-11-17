@@ -3,17 +3,17 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime
-import os  # ← přidáno
+import os
 
 app = Flask(__name__)
-app.secret_key = 'super_tajne_heslo'  # změň si!
+app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
 
 # Nastavení databáze
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'data.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)  # ← přidáno
+db = SQLAlchemy(app)
 
 
 # --- MODELY ---
@@ -166,6 +166,7 @@ def inject_db():
 
 @app.context_processor
 def inject_auth():
+    from flask import session
     u = None
     perms = dict(
         can_cashier=False,
@@ -182,6 +183,7 @@ def inject_auth():
                 for k in perms.keys():
                     perms[k] = True
             else:
+                # Načti práva z DB pro aktuální roli
                 p = Permission.query.filter_by(role=u.role).first()
                 if p:
                     perms.update(dict(
@@ -191,7 +193,6 @@ def inject_auth():
                         can_manage_items=p.can_manage_items,
                         can_manage_users=p.can_manage_users,
                     ))
-    # aliasy pro staré šablony
     return dict(current_user=u, perms=perms, user=u, me=u)
 
 # přidej tohle:

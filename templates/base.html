@@ -22,13 +22,12 @@
 </div>
 <div class="nav-actions">
 {% if session.get('user_id') %}
-{% set me = User.query.get(session.get('user_id')) %}
-<div class="kv">{{ me.username }} • <span class="small-muted">{{ me.role }}</span></div>
+<div class="kv">{{ current_user.username }} • <span class="small-muted">{{ current_user.role }}</span></div>
 {% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_panel') }}">Uživatelé</a>{% endif %}
 {% if perms.can_manage_users %}<a class="btn" href="{{ url_for('admin_permissions') }}">Role a práva</a>{% endif %}
-{% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('tables') }}">Stoly</a>{% endif %}
-{% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('admin_items') }}">Položky</a>{% endif %}
-{% if me.role in ['admin','manager'] %}<a class="btn" href="{{ url_for('closed_orders') }}">Uzavřené účty</a>{% endif %}
+{% if perms.can_manage_tables %}<a class="btn" href="{{ url_for('tables') }}">Stoly</a>{% endif %}
+{% if perms.can_manage_items %}<a class="btn" href="{{ url_for('admin_items') }}">Položky</a>{% endif %}
+{% if perms.can_view_closed_orders %}<a class="btn" href="{{ url_for('closed_orders') }}">Uzavřené účty</a>{% endif %}
 <a class="btn" href="{{ url_for('logout') }}">Odhlásit</a>
 {% else %}
 <a class="btn" href="{{ url_for('login') }}">Přihlásit</a>
@@ -52,6 +51,16 @@
 
 {% block content %}{% endblock %}
 
+{% if current_user %}
+<div style="background:rgba(255,0,0,0.1);padding:10px;margin:10px;font-size:12px;">
+  <strong>DEBUG:</strong> Role: {{ current_user.role }}<br>
+  can_cashier: {{ perms.can_cashier }}<br>
+  can_manage_tables: {{ perms.can_manage_tables }}<br>
+  can_manage_items: {{ perms.can_manage_items }}<br>
+  can_view_closed_orders: {{ perms.can_view_closed_orders }}<br>
+  can_manage_users: {{ perms.can_manage_users }}
+</div>
+{% endif %}
 
 <div class="footer">© {{ 2025 }} • ITB Vision s.r.o.</div>
 </main>
