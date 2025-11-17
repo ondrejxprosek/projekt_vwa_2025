@@ -196,12 +196,52 @@ header.navbar { position: relative; }
 }
 
 .print-logo {
-  display: block;
-  margin: 0 auto 8px;
-  height: 32px;
+  display: inline-block;
+  height: 24px;           /* menší na obrazovce */
+  max-width: 60%;
   width: auto;
+  margin: 0 auto 8px;
   opacity: 0.95;
 }
-@media print {
-  .print-logo { height: 32px; }
+
+/* Logo na účtence – pevná (rozumná) šířka, přegeneruje i případné inline styly */
+.receipt-header .print-logo {
+  width: 140px !important;   /* uprav dle potřeby */
+  height: auto !important;
+  max-width: 100% !important;
+  display: inline-block;
 }
+
+/* Náhled na obrazovce */
+.receipt-paper {
+  max-width: 360px;      /* jen pro web náhled */
+  margin: 0 auto;
+}
+
+/* Logo – výchozí (web) */
+.receipt-header .print-logo {
+  width: 140px;
+  height: auto;
+  display: inline-block;
+}
+
+/* Tisk: přizpůsobení šířce účtenky */
+@media print {
+  @page {
+    size: 80mm auto;      /* nastavení šířky papíru (80mm tiskárna) */
+    margin: 0;
+  }
+  .receipt-paper {
+    width: 80mm !important;
+    margin: 0 auto !important;
+  }
+  .receipt-paper .print-logo {
+    width: 100% !important;     /* přesně šířka účtenky */
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto 6mm !important;
+  }
+}
+
+/* Pokud máš 58mm tiskárnu, změň 80mm na 58mm v obou místech výše */

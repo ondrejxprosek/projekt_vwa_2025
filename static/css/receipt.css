@@ -1,0 +1,104 @@
+/* základní reset pro izolaci */
+.receipt-page, .receipt-page * { box-sizing: border-box; }
+.receipt-page { font-family: 'Courier New','Courier',monospace; background:#f5f5f5; color:#1a1a1a; }
+
+/* Scope: jen pro stránku účtenky */
+.receipt-page * { box-sizing: border-box; }
+
+.receipt-page {
+  font-family: 'Courier New','Courier',monospace;
+  color: #1a1a1a;
+  background: #f5f5f5;
+  padding: 20px;
+}
+
+.receipt {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #000;
+  padding-bottom: 12px;
+}
+
+.header .subtitle { font-size: 13px; color: #666; }
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+  margin: 3px 0;
+}
+
+.items { margin: 16px 0; }
+.item-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+.item-name { flex: 1; }
+.item-qty { margin: 0 8px; text-align: right; min-width: 30px; font-size: 12px; color: #999; }
+.item-price { text-align: right; min-width: 60px; font-weight: 700; }
+
+.divider { border: none; border-top: 2px solid #000; margin: 12px 0; }
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed #999;
+  font-size: 12px;
+  color: #666;
+}
+
+.buttons { display: flex; gap: 8px; margin-top: 20px; }
+.btn { flex: 1; padding: 10px; font-size: 13px; font-weight: 600; }
+
+/* Logo – náhled (web) */
+.receipt-header { text-align: center; margin-bottom: 8px; }
+.receipt-header .print-logo {
+  display: inline-block;
+  width: 140px;
+  max-width: 100%;
+  height: auto;
+  opacity: .95;
+}
+
+/* Tisk: omez šířku na šířku role a přizpůsob logo */
+@media print {
+  @page { size: 80mm auto; margin: 0; } /* pro 58mm změň na 58mm */
+  .receipt-page { background: #fff; padding: 0; }
+  .receipt {
+    width: 80mm; max-width: 80mm;
+    margin: 0 auto;
+    padding: 5mm 4mm;
+    box-shadow: none; border: none;
+  }
+  .buttons { display: none !important; }
+  .receipt-header .print-logo {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    margin: 0 auto 4mm !important;
+  }
+}

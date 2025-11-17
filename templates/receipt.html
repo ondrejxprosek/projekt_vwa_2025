@@ -4,127 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Účtenka - {{ order.table.name }}</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { 
-    font-family: 'Courier New', 'Courier', monospace; 
-    color: #1a1a1a; 
-    background: #f5f5f5;
-    padding: 20px;
-  }
-  .receipt { 
-    max-width: 420px; 
-    margin: 0 auto; 
-    padding: 30px; 
-    background: #fff; 
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  .header {
-    text-align: center;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #000;
-    padding-bottom: 12px;
-  }
-  .header h1 {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
-  .header .subtitle {
-    font-size: 13px;
-    color: #666;
-  }
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #666;
-    margin: 3px 0;
-  }
-  .items {
-    margin: 16px 0;
-  }
-  .item-line {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid #eee;
-    font-size: 13px;
-  }
-  .item-name {
-    flex: 1;
-  }
-  .item-qty {
-    margin: 0 8px;
-    text-align: right;
-    min-width: 30px;
-    font-size: 12px;
-    color: #999;
-  }
-  .item-price {
-    text-align: right;
-    min-width: 60px;
-    font-weight: bold;
-  }
-  .divider {
-    border: none;
-    border-top: 2px solid #000;
-    margin: 12px 0;
-  }
-  .total-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 16px;
-  }
-  .footer {
-    text-align: center;
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px dashed #999;
-    font-size: 12px;
-    color: #666;
-  }
-  .buttons {
-    display: flex;
-    gap: 8px;
-    margin-top: 20px;
-  }
-  .btn {
-    flex: 1;
-    padding: 10px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-  }
-  .btn:hover {
-    background: #0056b3;
-  }
-  .btn.secondary {
-    background: #6c757d;
-  }
-  .btn.secondary:hover {
-    background: #5a6268;
-  }
-  @media print { 
-    body { background: white; }
-    .receipt { box-shadow: none; border: none; }
-    .buttons { display: none; }
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/receipt.css', v=1) }}">
 </head>
-<body>
+<body class="receipt-page">
 <div class="receipt">
   <!-- Hlavička -->
   <div class="header">
-    <h1>ITB VISION</h1>
+    <div class="receipt-header">
+      <img class="print-logo" src="{{ url_for('static', filename='img/logo_pokladnicka.png') }}" alt="Pokladnička 2025">
+    </div>
     <div class="subtitle">ÚČTENKA</div>
   </div>
 
@@ -175,11 +63,6 @@
     <button class="btn" onclick="handlePrint()">🖨️ Tisk</button>
     <button class="btn secondary" onclick="goBackToCashier()">✕ Zpět na pokladnu</button>
   </div>
-</div>
-
-<div style="max-width:600px;margin:0 auto;">
-  <!-- přidáno: logo na účtence -->
-  <img class="print-logo" src="{{ url_for('static', filename='img/logo_pokladnicka.png') }}" alt="Pokladnička 2025">
 </div>
 
 <script>
