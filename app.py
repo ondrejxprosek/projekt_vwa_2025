@@ -9,7 +9,6 @@ import pytz
 TIMEZONE = pytz.timezone('Europe/Prague')
 
 def local_now():
-    """Vrátí lokální čas zařízení"""
     return datetime.now(TIMEZONE)
 
 app = Flask(__name__)
@@ -17,7 +16,8 @@ app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24)
 
 # Nastavení databáze
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, 'data.db')
+db_path = os.environ.get('DB_PATH') or os.path.join(BASE_DIR, 'data.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + db_path
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -50,12 +50,12 @@ class Table(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255))
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=local_now)  # ← změněno
 
 class TableSession(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
-    opened_at = db.Column(db.DateTime, default=datetime.utcnow)
+    opened_at = db.Column(db.DateTime, default=local_now)   # ← změněno
     closed_at = db.Column(db.DateTime, nullable=True)
 
     table = db.relationship('Table', backref=db.backref('sessions', lazy='dynamic'))
@@ -64,7 +64,7 @@ class TableItemEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     session_id = db.Column(db.Integer, db.ForeignKey('table_session.id'), nullable=False)
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=local_now)   # ← změněno
     quantity = db.Column(db.Integer, default=1)
 
     session = db.relationship('TableSession', backref=db.backref('entries', lazy='dynamic'))
@@ -408,7 +408,7 @@ def register():
         new_user.set_password(password)
         db.session.add(new_user)
         db.session.commit()
-        flash('Registrace úspěšná. Nyní se přihlaš.', 'success')
+        flash('Registrace úspěšná. Nyní se přihlas.', 'success')
         return redirect(url_for('login'))
 
     return render_template('register.html', admin_exists=admin_exists)

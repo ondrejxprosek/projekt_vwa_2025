@@ -1,36 +1,35 @@
 :root{
-  --bg:#1a324f;
-  --card:#0b1928;
-  --muted:#9aa5b1;
-  --accent:#156fbe;
-  --accent-2:#ffffff;
-  --glass: rgba(255,255,255,0.03);
+  --bg:#1a324f;            /* barva pozadí gradientu */
+  --card:#0b1928;          /* základní tmavá pro karty (ne všude přímo) */
+  --muted:#9aa5b1;         /* tlumený text (small-muted, kv atd.) */
+  --accent:#156fbe;        /* hlavní akcent (focus border, zvýraznění) */
+  --accent-2:#ffffff;      /* světlý akcent (ne přímo použit) */
+  --glass: rgba(255,255,255,0.03); /* lehký průhled pro list-item */
 }
-*{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial}
-html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a 0%, var(--bg) 100%);color:#e6eef6}
-.container{max-width:1100px;margin:40px auto;padding:0 20px}
-.brand{font-weight:300;letter-spacing:0.5px}
-.btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
-.btn:hover{border-color:rgba(124,92,255,0.8);color:#fff}
-.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:18px;border-radius:14px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
-.center-viewport{min-height:70vh;display:flex;align-items:center;justify-content:center}
+*{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial} /* globální reset + font */
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a 0%, var(--bg) 100%);color:#e6eef6} /* základní pozadí + text */
+.container{max-width:1100px;margin:40px auto;padding:0 20px} /* wrapper pro obsah stran (použito v base) */
+.brand{font-weight:300;letter-spacing:0.5px} /* starší brand (aktuálně nevyužito) */
+.btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer} /* tlačítka v navigaci i formulářích */
+.btn:hover{border-color:rgba(124,92,255,0.8);color:#fff} /* hover stav tlačítek */
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:18px;border-radius:14px;box-shadow:0 6px 20px rgba(2,6,23,0.6)} /* box pro sekce (dashboard, položky) */
+.center-viewport{min-height:70vh;display:flex;align-items:center;justify-content:center} /* zarovnání na střed (neviděl jsem použití) */
 .input, input[type="text"], input[type="password"], input[type="email"], input[type="number"], input[type="date"], textarea {
   padding: 10px 12px;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 6px;
   background: rgba(255,255,255,0.02);
-  color: var(--text);
+  color: var(--text);              /* var(--text) není definován (může být problém; fallback = inherit) */
   font-family: inherit;
   font-size: 14px;
-}
-.input::placeholder{color:var(--muted)}
+} /* vstupní pole ve formulářích (registrace, položky, login) */
+.input::placeholder{color:var(--muted)} /* placeholder barva */
 .input:focus, input:focus, textarea:focus {
   outline: none;
   border-color: var(--accent);
   background: rgba(124,92,255,0.05);
-}
-.form-row{display:flex;gap:10px} /* gap je mezera mezi bloky */
-.h1{font-size:20px;margin:0 0 12px 0}
+} /* zvýraznění při focuse */
+.h1{font-size:20px;margin:0 0 12px 0} /* nadpisy sekcí */
 .hint {
   padding: 12px;
   background: rgba(124, 92, 255, 0.1);
@@ -38,69 +37,78 @@ html,body{height:100%;margin:0;background:linear-gradient(180deg,#05060a 0%, var
   border-radius: 6px;
   font-size: 14px;
   color: var(--muted);
-}
-.flash{padding:10px;border-radius:10px;margin-bottom:12px}
-.flash-success{background:linear-gradient(90deg, rgba(55, 177, 153, 0.06), rgba(102, 71, 225, 0.03));border-left:4px solid var(--accent)}
-.flash-danger{background:linear-gradient(90deg, rgba(255,64,64,0.03), rgba(255,255,255,0.01));border-left:4px solid #ff6b6b}
-.list{margin-top:12px}
-.list-item{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;background:var(--glass)}
-/* .badge{padding:10px 15px;border-radius:999px;font-weight:600;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#071018} */
-.small-muted{color:var(--muted);font-size:12px}
-.table{width:100%;border-collapse:collapse}
-.table th, .table td{padding:10px;text-align:left}
-.table thead th{color:var(--muted);font-size:13px}
-.form-inline{display:flex;gap:8px}
-.kv{color:var(--muted);font-size:13px}
-/* subtle neon glow */
-.glow{box-shadow:0 6px 30px rgba(124,92,255,0.08), 0 0 12px rgba(0,230,168,0.03)}
-.footer{margin-top:30px;color:var(--muted);text-align:center;font-size:13px}
+} /* informační blok (např. u prázdných objednávek) */
+.flash{padding:10px;border-radius:10px;margin-bottom:12px} /* základ flash zprávy */
+.flash-success{background:linear-gradient(90deg, rgba(55, 177, 153, 0.06), rgba(102, 71, 225, 0.03));border-left:4px solid var(--accent)} /* success flash */
+.flash-danger{background:linear-gradient(90deg, rgba(255,64,64,0.03), rgba(255,255,255,0.01));border-left:4px solid #ff6b6b} /* error flash */
+.list{margin-top:12px} /* seznam (neviděl jsem použití) */
+.list-item{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;background:var(--glass)} /* položky v seznamu (asi nevyužito) */
+.small-muted{color:var(--muted);font-size:12px} /* malé tlumené texty (role, popisy) */
+.table{width:100%;border-collapse:collapse} /* tabulka položek */
+.table th, .table td{padding:10px;text-align:left} /* buňky tabulky */
+.table thead th{color:var(--muted);font-size:13px} /* hlavička tabulky */
+.form-inline{display:flex;gap:8px} /* řádkový edit form položky */
+.kv{color:var(--muted);font-size:13px} /* text s info (uživatel v menu) */
+.glow{box-shadow:0 6px 30px rgba(124,92,255,0.08), 0 0 12px rgba(0,230,168,0.03)} /* efektní zvýraznění tlačítek (např. Přidat) */
+.footer{margin-top:30px;color:var(--muted);text-align:center;font-size:13px} /* patička stránky */
 .navbar {
     display: flex;
     align-items: center;
-    gap: 8px; /* mezera mezi home, cashier, brand ... */
+    gap: 8px;
     padding: 8px 12px;
-}
+} /* hlavní horní lišta */
 .nav-actions {
     margin-left: auto;
     display: flex;
     align-items: center;
     gap: 10px;
-}
+} /* blok akcí vpravo (menu odkazy) */
 .home-link {
     margin-right: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 50px;
+    height: 50px;
     background: #fff;
     border-radius: 50%;
     padding: 4px;
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     text-decoration: none;
-}
+    border: 4px solid #a2a2a2;
+} /* kruhové tlačítko (Domů) */
+.home-link-cashier {
+    margin-right: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: #ffffff;
+    border-radius: 50%;
+    padding: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    text-decoration: none;
+    border: 4px solid #8477ff;
+} /* kruhové tlačítko (Pokladna) */
 .home-link img {
     object-fit:contain;
     width: 22px;
     height: 22px;
     object-fit: contain;
     display: block;
-}
+} /* obrázek ikony v home-link */
 .home-link:hover {
     background: #f2f2f2;
-}
-/* Checkboxy */
+} /* hover efekt ikony */
 input[type="checkbox"] {
   accent-color: var(--accent);
   cursor: pointer;
-}
-
+} /* checkbox styl (použito u práv) */
 label {
   cursor: pointer;
   user-select: none;
-}
-
-/* Hamburger button */
+} /* pohodlné klikání na label (práva) */
 .hamburger {
   display: none;
   align-items: center;
@@ -112,23 +120,15 @@ label {
   background: transparent;
   color: inherit;
   cursor: pointer;
-}
-
-/* Ujisti se, že header je relativní pro absolutní menu */
-header.navbar { position: relative; }
-
-/* Desktop výchozí */
+} /* tlačítko pro mobil menu */
+header.navbar { position: relative; } /* umožní absolutní nav panel */
 .nav-actions {
   display: flex;
   gap: 8px;
   align-items: center;
-}
-
-/* Mobile layout */
+} /* desktop verze navigace */
 @media (max-width: 920px) {
-  .hamburger { display: inline-flex; }
-
-  /* Skryj akce, zobraz po togglu jako panel */
+  .hamburger { display: inline-flex; } /* zobraz hamburger na mobilu */
   .nav-actions {
     display: none;
     position: absolute;
@@ -143,23 +143,21 @@ header.navbar { position: relative; }
     flex-direction: column;
     align-items: stretch;
     z-index: 1000;
-  }
-  .nav-actions.is-open { display: flex; }
-
+  } /* skrytý panel mobil menu */
+  .nav-actions.is-open { display: flex; } /* otevřený stav mobil menu */
   .nav-actions .kv {
     padding: 8px 6px;
     border-bottom: 1px solid rgba(255,255,255,0.1);
     margin-bottom: 6px;
     font-size: 12px;
-  }
+  } /* info blok uživatele v mobil menu */
   .nav-actions .btn {
     width: 100%;
     text-align: center;
     justify-content: center;
-  }
+  } /* tlačítka přes celou šířku v mobil menu */
 }
-
-/* Decentní datum/čas v brandu */
+/* datum / čas + uživatel ve středu */
 .brand--minimal {
   margin: 0;
   padding: 0;
@@ -188,60 +186,82 @@ header.navbar { position: relative; }
   height: 150px;
   width: auto;
   display: block;
-  margin: 0 0 4px 0; /* decentně nad časem/uživatelem */
+  margin: 0 0 4px 0;
   opacity: 0.9;
-}
+} /* logo aplikace (velké; možná zmenšit pro header) */
 @media (max-width: 768px) {
   .brand-logo { height: 150px; }
 }
-
 .print-logo {
   display: inline-block;
-  height: 24px;           /* menší na obrazovce */
+  height: 24px;
   max-width: 60%;
   width: auto;
   margin: 0 auto 8px;
   opacity: 0.95;
-}
-
-/* Logo na účtence – pevná (rozumná) šířka, přegeneruje i případné inline styly */
+} /* obecné menší logo (účtenka) */
 .receipt-header .print-logo {
-  width: 140px !important;   /* uprav dle potřeby */
+  width: 140px !important;
   height: auto !important;
   max-width: 100% !important;
   display: inline-block;
-}
-
-/* Náhled na obrazovce */
+} /* logo v hlavičce účtenky – override */
 .receipt-paper {
-  max-width: 360px;      /* jen pro web náhled */
+  max-width: 360px;
   margin: 0 auto;
-}
-
-/* Logo – výchozí (web) */
+} /* wrapper pro náhled účtenky (pokud používané) */
 .receipt-header .print-logo {
   width: 140px;
   height: auto;
   display: inline-block;
-}
-
-/* Tisk: přizpůsobení šířce účtenky */
+} /* duplicitní definice – stejné jako výše (lze sloučit) */
 @media print {
   @page {
-    size: 80mm auto;      /* nastavení šířky papíru (80mm tiskárna) */
+    size: 80mm auto;
     margin: 0;
-  }
+  } /* formát stránky pro tisk */
   .receipt-paper {
     width: 80mm !important;
     margin: 0 auto !important;
-  }
+  } /* šířka pro tisk účtenky */
   .receipt-paper .print-logo {
-    width: 100% !important;     /* přesně šířka účtenky */
+    width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
     display: block !important;
     margin: 0 auto 6mm !important;
-  }
+  } /* logo na šířku při tisku */
 }
-
-/* Pokud máš 58mm tiskárnu, změň 80mm na 58mm v obou místech výše */
+.item-form {
+  width:50%;
+  max-width:560px;
+  min-width:320px;
+  margin:0 0 24px 0;
+} /* formulář pro přidání položky (šířka půl stránky) */
+.item-form .input {
+  width:100%;
+  box-sizing:border-box;
+  resize:none;
+} /* vstupy ve formu položky natažené na šířku */
+@media (max-width: 900px) {
+  .item-form { width:100%; max-width:100%; }
+} /* plná šířka na menších displejích */
+/* Registrace / formuláře: vertikální řazení a mezery */
+.form-container { max-width: 520px; margin: 0 auto; }
+.form { width: 100%; }
+.form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;               /* mezera mezi label a inputem */
+  margin-bottom: 14px;    /* mezera mezi skupinami */
+}
+.form .form-group label {
+  margin: 0 0 6px 0;      /* mezera pod labely */
+  font-weight: 600;
+}
+.form .input,
+.form select,
+.form textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
